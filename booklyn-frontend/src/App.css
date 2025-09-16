@@ -1,0 +1,42 @@
+.App {
+  text-align:center;
+}
+
+
+  .App-logo {
+    height: 40vmin;
+    position: absolute;
+    top: -120px;
+    left: 500px;
+  }
+
+.App-header {
+  background-color: #e4aca2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.join_button{
+  background-color: rgb(36, 1, 102);
+  text-decoration: wavy;
+  color: #e3ebf5;
+  font-weight: bolder;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 20px 20px;
+  z-index: 1000;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  top: 300px;
+  left: 600px;
+
+}
+
+.App-link {
+  color: #61dafb;
+}
