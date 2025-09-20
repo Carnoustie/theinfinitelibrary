@@ -6,8 +6,8 @@
   .App-logo {
     height: 40vmin;
     position: absolute;
-    top: -120px;
-    left: 500px;
+    top: -60px;
+    left: 140px;
   }
 
 .App-header {
@@ -22,7 +22,7 @@
 }
 
 .join_button{
-  background-color: rgb(36, 1, 102);
+  background-color: rgb(15, 32, 65);
   text-decoration: wavy;
   color: #e3ebf5;
   font-weight: bolder;
@@ -32,8 +32,8 @@
   border: none;
   cursor: pointer;
   position: absolute;
-  top: 300px;
-  left: 600px;
+  top: 400px;
+  left: 200px;
 
 }
 
