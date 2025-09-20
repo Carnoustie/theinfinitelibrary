@@ -1,4 +1,4 @@
-import logo from './latest_logo.png';
+import logo from './logotype.png';
 import './App.css';
 
 function logtoconsole(){
@@ -8,7 +8,7 @@ function logtoconsole(){
 
 function App() {
 
-  const join_prompt = "Join the Booklyn community!"
+  const join_prompt = "Join The Infinite Library!"
   return (
     <div className="App">
       <header className="App-header">
