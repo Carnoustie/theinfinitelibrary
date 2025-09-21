@@ -16,6 +16,7 @@ function App() {
         <button className="join_button" type="button" onClick={logtoconsole}>
           {join_prompt}
         </button>
+        <p>Deployed via Google Kubernetes Engine!</p>
       </header>
     </div>
   );
