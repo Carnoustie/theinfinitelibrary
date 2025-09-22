@@ -1,12 +1,22 @@
 import logo from './logotype.png';
 import './App.css';
+import { useState } from 'react';
 
-function logtoconsole(){
-  console.log("\n\n\nSomebody wants to join the book club!\n\n\n")
-  fetch("http://localhost:8080/").then(res => res.text()).then(data => console.log(data))
-}
+
+
 
 function App() {
+  
+  const [message, setMessage] = useState("");
+
+  function logtoconsole(){
+    console.log("\n\n\nSomebody wants to join the book club!\n\n\n")
+    fetch("/api/").then(res => res.text()).then(data => {
+      console.log(data);
+      setMessage(data);
+    })
+  }
+
 
   const join_prompt = "Join The Infinite Library!"
   return (
@@ -16,7 +26,15 @@ function App() {
         <button className="join_button" type="button" onClick={logtoconsole}>
           {join_prompt}
         </button>
-        <p>Deployed via Google Kubernetes Engine!</p>
+        <br/>
+        <br/>
+        {message && (
+          <p className="response">
+            {message}
+          </p>
+        )
+
+        }
       </header>
     </div>
   );
