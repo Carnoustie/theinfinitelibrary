@@ -1,5 +1,5 @@
 
-# Note from Oscar: The React app uses the "skeleton" provided after running "npm init create-reactapp", following the advice from the book "Learning React" (Banks & Porcello, 2nd edition)
+# Note from Oscar: The React app uses the "skeleton" provided after running "npm init create-reactapp", following the advice from the book "Learning React" (Banks & Porcello, 2nd edition), which also auto-generated the README below. Readme is to be rewritten :)
 
 
 # Getting Started with Create React App
