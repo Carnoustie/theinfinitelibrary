@@ -4,5 +4,5 @@ Rewriting the bookworm app in go (backend) and typescript (react) frontend. No A
 
 ##DevOps Architecture
 
-![DevOps workflow](DevOpsArchitecture.jpg)
+![DevOps workflow](DevOpsArchitecture.png)
 
