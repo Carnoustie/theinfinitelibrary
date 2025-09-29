@@ -1,12 +1,16 @@
 package main
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"golang.org/x/crypto/argon2"
 )
 
 func main() {
@@ -25,14 +29,28 @@ func main() {
 		panic(err)
 	}
 
+	type User struct {
+		Username string `json:"username"`
+		Password string `json:"Password"`
+	}
+
 	http.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		fmt.Println("\n\nSomeone from their browser wants to join The Infinite Library!!\n\n")
-		fmt.Fprintln(w, "\n\nServer saw that you want to join The Infinite Library! :) \n\n")
+		var bodyContents []byte
+		bodyContents, _ = io.ReadAll(r.Body)
+		var u User
+		_ = json.Unmarshal(bodyContents, &u)
+
+		salt := make([]byte, 16)
+		_, _ = rand.Read(salt)
+		encryptedPassword := argon2.IDKey([]byte(u.Password), salt, 1, 64*1024, 4, 32)
+		fmt.Println("\n\nencrypted pw: ", encryptedPassword)
+
 		_, err = db.Exec(`insert into til_member (id, username) values (12132, "janeaausten")`)
 		if err != nil {
 			fmt.Println("Insert failed: ", err)
 		}
+
 	})
 
 	http.ListenAndServe(":8080", nil)

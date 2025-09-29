@@ -15,6 +15,12 @@ function Signup(){
   function submitHandler(ev){
     ev.preventDefault()
     setMessage("Account handling and safe password handling yet to be implemented, your account was not saved.....")
+
+    const response = fetch("/api/", {
+      method: "POST",
+      body: JSON.stringify({username, password})
+    });
+
   }
 
   return(
@@ -23,15 +29,14 @@ function Signup(){
         <form className="form-style" onSubmit={submitHandler} >
           <input
             value={username}
-            onChange={event=>setPassword(event.target.value)}
+            onChange={event=>setUsername(event.target.value)}
             placeholder="Choose a username"
           />
           <br/>
           <br/>
-
           <input
             value = {password}
-            onChange={event=>setUsername(event.target.value)}
+            onChange={event=>setPassword(event.target.value)}
             placeholder="Choose a password"
           />
           <br/>
@@ -53,9 +58,9 @@ function Home({message, join_prompt, logtoconsole}){
           <img src={logo} className="App-logo" alt="logo" />
           <br/>
           <nav>
-            <a href="/signup" className="button-link">
+            <Link to="/signup" className="button-link">
               Join The Infinite Library!
-            </a>
+            </Link>
           </nav>
           <br/>
           {message && (
