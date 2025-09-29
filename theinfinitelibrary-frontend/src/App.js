@@ -5,12 +5,44 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 
 
 
-function About(){
-  return( 
+
+function Signup(){
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [message, setMessage] = useState("")
+
+
+  function submitHandler(ev){
+    ev.preventDefault()
+    setMessage("Account handling and safe password handling yet to be implemented, your account was not saved.....")
+  }
+
+  return(
     <div className="App-header">
-      <h1>The infinite Library is..........</h1>
+      <header>
+        <form className="form-style" onSubmit={submitHandler} >
+          <input
+            value={username}
+            onChange={event=>setPassword(event.target.value)}
+            placeholder="Choose a username"
+          />
+          <br/>
+          <br/>
+
+          <input
+            value = {password}
+            onChange={event=>setUsername(event.target.value)}
+            placeholder="Choose a password"
+          />
+          <br/>
+          <button type = "submit" className="button-style">
+            Submit
+          </button>
+        </form>
+          {message}
+      </header>
     </div>
-  )
+  );
 }
 
 
@@ -19,10 +51,12 @@ function Home({message, join_prompt, logtoconsole}){
       <div>
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <button className="join_button" type="button" onClick={logtoconsole}>
-            {join_prompt}
-          </button>
           <br/>
+          <nav>
+            <a href="/signup" className="button-link">
+              Join The Infinite Library!
+            </a>
+          </nav>
           <br/>
           {message && (
             <p className="response">
@@ -31,11 +65,6 @@ function Home({message, join_prompt, logtoconsole}){
           )
           }
         </header>
-        <footer className="footer-style">
-          <nav>
-            <Link to="/about">About</Link>
-          </nav>
-        </footer>
       </div>
   );
 }
@@ -69,7 +98,10 @@ function App() {
         />
         }
       />
-      <Route path="/about" element= {<About/>} />
+      <Route 
+      path="/signup"
+      element= <Signup/>
+      />
     </Routes>
 
     </BrowserRouter>

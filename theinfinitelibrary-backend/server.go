@@ -25,7 +25,7 @@ func main() {
 		panic(err)
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		fmt.Println("\n\nSomeone from their browser wants to join The Infinite Library!!\n\n")
 		fmt.Fprintln(w, "\n\nServer saw that you want to join The Infinite Library! :) \n\n")
