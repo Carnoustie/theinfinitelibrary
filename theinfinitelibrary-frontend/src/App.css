@@ -21,11 +21,30 @@
   color: white;
 }
 
-.join_button{
+
+
+.button-style{
   background-color: rgb(15, 32, 65);
   text-decoration: wavy;
   color: #e3ebf5;
   font-weight: bolder;
+  font-size: medium;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 20px 20px;
+  z-index: 1000;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  top: 180px;
+  left: 22px;
+}
+
+.button-link{
+  background-color: rgb(15, 32, 65);
+  text-decoration: wavy;
+  color: #e3ebf5;
+  font-weight: bolder;
+  font-size: medium;
   font-family: 'Courier New', Courier, monospace;
   padding: 20px 20px;
   z-index: 1000;
@@ -34,7 +53,22 @@
   position: absolute;
   top: 400px;
   left: 200px;
+}
 
+.form-style{
+  background-color: #e4aca2;
+  text-decoration: wavy;
+  color: #e3ebf5;
+  font-weight: bolder;
+  font-size: medium;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 20px 20px;
+  z-index: 1000;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  top: 200px;
+  left: 200px;
 }
 
 .App-link {
