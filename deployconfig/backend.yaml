@@ -18,6 +18,18 @@ spec:
           image: europe-north1-docker.pkg.dev/theinfinitelibrary/containers/backend:latest
           ports:
             - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 20
           env:
             - name: DB_HOST
               value: mysql
