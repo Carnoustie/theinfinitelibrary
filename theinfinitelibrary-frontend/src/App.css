@@ -50,7 +50,6 @@
   z-index: 1000;
   border: none;
   cursor: pointer;
-  position: absolute;
   top: 400px;
   left: 200px;
 }
@@ -73,6 +72,10 @@
 
 .App-link {
   color: #61dafb;
+}
+
+.vspace{
+  margin-top: 1000px;
 }
 
 .footer-style{

@@ -12,14 +12,16 @@ function Signup(){
   const [message, setMessage] = useState("")
 
 
-  function submitHandler(ev){
+  async function submitHandler(ev){
     ev.preventDefault()
-    setMessage("Account handling and safe password handling yet to be implemented, your account was not saved.....")
 
-    const response = fetch("/api/", {
+    const response = await fetch("/api/signup", {
       method: "POST",
       body: JSON.stringify({username, password})
     });
+
+    const m = await response.text()
+    setMessage(m)
 
   }
 
@@ -46,6 +48,61 @@ function Signup(){
         </form>
           {message}
       </header>
+      <pr className="vspace">
+      Irreversible encryption is applied to your password to keep your account safe :) 
+      </pr>
+    </div>
+  );
+}
+
+
+
+
+
+function Login(){
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [message, setMessage] = useState("")
+
+  async function loginHandler(ev){
+    ev.preventDefault()
+
+    const response = await fetch("/api/login", {
+      method: "POST",
+      body: JSON.stringify({username,password})
+    });
+
+    const m = await response.text();
+    setMessage(m)
+  }
+
+  return(
+    <div className="App-header">
+      <header>
+        <form className="form-style" onSubmit={loginHandler} >
+          <input
+            value={username}
+            onChange={event=>setUsername(event.target.value)}
+            placeholder="Enter your username"
+          />
+          <br/>
+          <br/>
+          <input
+            value = {password}
+            onChange={event=>setPassword(event.target.value)}
+            placeholder="Enter your password"
+          />
+          <br/>
+          <button type = "submit" className="button-style">
+            Login
+          </button>
+        </form>
+          {message}
+          
+      </header>
+      <pr className="vspace">
+      Irreversible encryption is applied to your password to keep your account safe :) 
+      </pr>
     </div>
   );
 }
@@ -61,6 +118,12 @@ function Home({message, join_prompt, logtoconsole}){
             <Link to="/signup" className="button-link">
               Join The Infinite Library!
             </Link>
+            <br/>
+            <br/>
+            <br/>
+            <Link to="/login" className="button-link">
+              Login!
+            </Link>          
           </nav>
           <br/>
           {message && (
@@ -106,6 +169,10 @@ function App() {
       <Route 
       path="/signup"
       element= <Signup/>
+      />
+      <Route 
+      path="/login"
+      element= <Login/>
       />
     </Routes>
 
