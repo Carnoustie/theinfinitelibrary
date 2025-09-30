@@ -22,7 +22,6 @@ function Signup(){
 
     const m = await response.text()
     setMessage(m)
-
   }
 
   return(
@@ -54,8 +53,6 @@ function Signup(){
     </div>
   );
 }
-
-
 
 
 
