@@ -1,8 +1,25 @@
 import logo from './logotype.png';
 import './App.css';
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams} from 'react-router-dom';
+import { redirect } from 'react-router';
 
+
+
+function Loggedin(){
+  console.log("Hit loggedin")
+  const {username} = useParams()
+  return(
+    <div className="App-header">
+      <header>
+        Welcome back {username}!
+      </header>
+      <p>
+        You have read the following books:....
+      </p>
+    </div>
+  )
+}
 
 
 
@@ -60,6 +77,7 @@ function Login(){
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
+  const [isloggedin, setIsLoggedIn] = useState(false)
 
   async function loginHandler(ev){
     ev.preventDefault()
@@ -68,9 +86,10 @@ function Login(){
       method: "POST",
       body: JSON.stringify({username,password})
     });
-
+    setIsLoggedIn(true)
     const m = await response.text();
     setMessage(m)
+    console.log("Hit here!")
   }
 
   return(
@@ -95,7 +114,7 @@ function Login(){
           </button>
         </form>
           {message}
-          
+          {isloggedin ? <Navigate to = {`/loggedin/${username}`}/> : null}          
       </header>
       <pr className="vspace">
       Irreversible encryption is applied to your password to keep your account safe :) 
@@ -140,6 +159,7 @@ function Home({message, join_prompt, logtoconsole}){
 function App() {
   
   const [message, setMessage] = useState("");
+  const [username, setUsername] = useState("")
 
   function logtoconsole(){
     console.log("\n\n\nSomebody wants to join the book club!\n\n\n")
@@ -169,7 +189,11 @@ function App() {
       />
       <Route 
       path="/login"
-      element= <Login/>
+      element= <Login setUsername = {setUsername}/>
+      />
+      <Route
+      path="/loggedin/:username"
+      element= <Loggedin username = {username}/>
       />
     </Routes>
 
