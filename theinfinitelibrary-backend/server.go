@@ -20,6 +20,11 @@ type User struct {
 	Password string `json:"Password"`
 }
 
+type Book struct {
+	Title  string `json: "title"`
+	Author string `json: Author`
+}
+
 func main() {
 	fmt.Println("\n\n\n\nThe Infinite Library Server is running\n\n\n\n")
 
@@ -85,6 +90,7 @@ func main() {
 		var salt []byte
 		var pwHash []byte
 		err = db.QueryRow("select salt,password_hash from til_member where username=?", u.Username).Scan(&salt, &pwHash)
+		fmt.Println("\n\nUsername: ", u.Username)
 		if err != nil {
 			fmt.Println("DB lookup failed with error: ", err)
 			_, _ = w.Write([]byte("Could not find user."))
@@ -102,6 +108,40 @@ func main() {
 			}
 		}
 
+	})
+
+	http.HandleFunc("/api/addbook", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*") //Allow sharing response with client
+
+		var bodyContents []byte
+		bodyContents, err := io.ReadAll(r.Body)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("\n\nbody: ", string(bodyContents))
+
+		var bk Book
+		var u User
+		err = json.Unmarshal(bodyContents, &bk)
+		err = json.Unmarshal(bodyContents, &u)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("\n\nTitle: ", bk.Title, "\n\nAuthor: ", bk.Author)
+
+		var userID int
+		err = db.QueryRow("select id from til_member where username=?", u.Username).Scan(&userID)
+		if err != nil {
+			fmt.Println("db lookup failed with error: ", err)
+		}
+
+		fmt.Println("\n\nQuery result: ", int64(userID))
+
+		_, err = db.Exec("insert into books (member_id, title, author) values(?,?,?)", userID, bk.Title, bk.Author)
+		if err != nil {
+			fmt.Println("db insert failed with", err)
+		}
 	})
 
 	http.ListenAndServe(":8080", nil)
