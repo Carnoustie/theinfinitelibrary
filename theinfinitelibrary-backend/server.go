@@ -133,15 +133,58 @@ func main() {
 		var userID int
 		err = db.QueryRow("select id from til_member where username=?", u.Username).Scan(&userID)
 		if err != nil {
-			fmt.Println("db lookup failed with error: ", err)
+			fmt.Println("db lookup 1 failed with error: ", err)
 		}
 
 		fmt.Println("\n\nQuery result: ", int64(userID))
 
 		_, err = db.Exec("insert into books (member_id, title, author) values(?,?,?)", userID, bk.Title, bk.Author)
 		if err != nil {
-			fmt.Println("db insert failed with", err)
+			fmt.Println("db insert 2 failed with", err)
 		}
+	})
+
+	http.HandleFunc("/api/getbooks", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*") //Allow sharing response with client
+
+		var bodyContents []byte
+		bodyContents, err = io.ReadAll(r.Body)
+		if err != nil {
+			panic(err)
+		}
+
+		var u User
+
+		err = json.Unmarshal(bodyContents, &u)
+		if err != nil {
+			panic(err)
+		}
+		var memberID int64
+		err := db.QueryRow("select id from til_member where username=?", u.Username).Scan(&memberID)
+		if err != nil {
+			fmt.Println("db lookup 3 failed with error: ", err)
+		}
+		// var result []string
+
+		// err = db.QueryRow("select * from books where member_id=?", memberID).Scan(&result)
+		// row := db.QueryRow("select * from books where member_id=?", memberID)
+
+		rows, _ := db.Query("select title from books where member_id=?", memberID)
+		var b []byte
+		for rows.Next() {
+			rows.Scan(&b)
+			fmt.Println("\n\nlocalbook: ", string(b))
+		}
+
+		// if err != nil {
+		// 	fmt.Println("db lookup 4 failed with error: ", err)
+		// }
+
+		fmt.Println("\n\nmemberID: ", memberID)
+
+		// fmt.Println("\n\nBookarray: ", result)
+
+		// fmt.Println("\n\nrow: ", row)
 	})
 
 	http.ListenAndServe(":8080", nil)
