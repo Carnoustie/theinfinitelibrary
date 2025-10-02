@@ -21,6 +21,11 @@ function AddBook(props){
       method: "POST",
       body: JSON.stringify({username: props.username, title: title, author:  author})
     });
+
+    const r2 = fetch("api/getbooks",{
+      method: "POST",
+      body: JSON.stringify({username:props.username})
+    })
   }
 
   return(
