@@ -14,7 +14,9 @@ function AddBook(props){
   const [author, setAuthor] = useState("")
 
 
-  function submitHandler(ev){
+
+
+  async function submitHandler(ev){
     ev.preventDefault()
     console.log("\n\n\nHit bookadder")
     const response = fetch("api/addbook",{
@@ -22,10 +24,14 @@ function AddBook(props){
       body: JSON.stringify({username: props.username, title: title, author:  author})
     });
 
-    const r2 = fetch("api/getbooks",{
+    const r2 = await fetch("api/getbooks",{
       method: "POST",
       body: JSON.stringify({username:props.username})
     })
+
+    const m = await r2.text()
+    props.setBookList(m)
+
   }
 
   return(
@@ -63,7 +69,7 @@ function Loggedin(props){
        add book to your personal library
       </Link>       
       <p>
-        You have read the following books:....
+        You have read the following books:.... {props.bookList}
       </p>
     </div>
   )
@@ -213,6 +219,8 @@ function App() {
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("")
 
+  const [bookList, setBookList] = useState("")
+
   function logtoconsole(){
     console.log("\n\n\nSomebody wants to join the book club!\n\n\n")
     fetch("/api/").then(res => res.text()).then(data => {
@@ -241,15 +249,15 @@ function App() {
       />
       <Route 
       path="/login"
-      element= <Login username = {username} setUsername = {setUsername}/>
+      element= <Login username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList}/>
       />
       <Route
       path="/loggedin"
-      element= <Loggedin username = {username} setUsername= {setUsername}/>
+      element= <Loggedin username = {username} setUsername= {setUsername} bookList = {bookList} setBookList = {setBookList}/>
       />
       <Route
       path="/addbook"
-      element=<AddBook username = {username} setUsername = {setUsername}/>
+      element=<AddBook username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList}/>
       />
     </Routes>
 

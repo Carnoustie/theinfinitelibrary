@@ -171,10 +171,15 @@ func main() {
 
 		rows, _ := db.Query("select title from books where member_id=?", memberID)
 		var b []byte
+
+		var resp string
 		for rows.Next() {
 			rows.Scan(&b)
+			resp += string(b)
 			fmt.Println("\n\nlocalbook: ", string(b))
 		}
+
+		w.Write([]byte(resp))
 
 		// if err != nil {
 		// 	fmt.Println("db lookup 4 failed with error: ", err)
