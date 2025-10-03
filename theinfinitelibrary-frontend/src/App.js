@@ -1,8 +1,83 @@
 import logo from './logotype.png';
 import './App.css';
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams} from 'react-router-dom';
+import { redirect } from 'react-router';
 
+
+
+
+
+function AddBook(props){
+
+  const [title, setTitle] = useState("")
+  const [author, setAuthor] = useState("")
+
+
+
+
+  async function submitHandler(ev){
+    ev.preventDefault()
+    console.log("\n\n\nHit bookadder")
+    const response = await fetch("api/addbook",{
+      method: "POST",
+      body: JSON.stringify({username: props.username, title: title, author:  author})
+    });
+
+    const r2 = await fetch("api/getbooks",{
+      method: "POST",
+      body: JSON.stringify({username:props.username})
+    })
+
+    const books = await r2.json()
+    props.setBookList(books)
+  }
+
+  return(
+    <div className="App-header">
+      <form className="form-style" onSubmit = {submitHandler}>
+        <input
+          value={title}
+          onChange={event=>setTitle(event.target.value)}
+          placeholder='Title'
+        />
+        <br/>
+        <br/>
+        <input
+          value = {author}
+          onChange={event=>setAuthor(event.target.value)}
+          placeholder='Author'
+        />
+        <button type= "submit" className="button-style">
+          Add Book
+        </button>
+      </form>
+    </div>
+  )
+}
+
+
+function Loggedin(props){
+  console.log("Hit loggedin")
+  return(
+    <div className="App-header">
+      <header>
+        Welcome back {props.username}!
+      </header>
+      <Link to = "/addbook" className="button-style">
+       add book to your personal library
+      </Link>       
+      <p>
+        You have read the following books:.... 
+      </p>
+      <ul>
+        {props.bookList.length>0 ? props.bookList.map(b=>(
+          <li key={b.title + b.author}> {b.title} by {b.author} </li>
+        )) : null}
+      </ul>
+    </div>
+  )
+}
 
 
 
@@ -56,21 +131,36 @@ function Signup(){
 
 
 
-function Login(){
-  const [username, setUsername] = useState("")
+function Login(props){
+  // const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
+  const [isloggedin, setIsLoggedIn] = useState(false)
 
   async function loginHandler(ev){
     ev.preventDefault()
 
     const response = await fetch("/api/login", {
       method: "POST",
-      body: JSON.stringify({username,password})
+      body: JSON.stringify({username: props.username, password:  password})
     });
 
+    setIsLoggedIn(true)
     const m = await response.text();
     setMessage(m)
+
+
+
+    const r2 = await fetch("api/getbooks",{
+      method: "POST",
+      body: JSON.stringify({username:props.username})
+    })
+
+    const books = await r2.json()
+    props.setBookList(books)
+
+
+
   }
 
   return(
@@ -78,8 +168,8 @@ function Login(){
       <header>
         <form className="form-style" onSubmit={loginHandler} >
           <input
-            value={username}
-            onChange={event=>setUsername(event.target.value)}
+            value={props.username}
+            onChange={event=>props.setUsername(event.target.value)}
             placeholder="Enter your username"
           />
           <br/>
@@ -95,7 +185,7 @@ function Login(){
           </button>
         </form>
           {message}
-          
+          {isloggedin ? <Navigate to = {`/loggedin`}/> : null}          
       </header>
       <pr className="vspace">
       Irreversible encryption is applied to your password to keep your account safe :) 
@@ -140,6 +230,9 @@ function Home({message, join_prompt, logtoconsole}){
 function App() {
   
   const [message, setMessage] = useState("");
+  const [username, setUsername] = useState("")
+
+  const [bookList, setBookList] = useState([])
 
   function logtoconsole(){
     console.log("\n\n\nSomebody wants to join the book club!\n\n\n")
@@ -165,11 +258,19 @@ function App() {
       />
       <Route 
       path="/signup"
-      element= <Signup/>
+      element= {<Signup/>}
       />
       <Route 
       path="/login"
-      element= <Login/>
+      element= {<Login username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList}/>}
+      />
+      <Route
+      path="/loggedin"
+      element=  {<Loggedin username = {username} setUsername= {setUsername} bookList = {bookList} setBookList = {setBookList}/>}
+      />
+      <Route
+      path="/addbook"
+      element= {<AddBook username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList}/>}
       />
     </Routes>
 
