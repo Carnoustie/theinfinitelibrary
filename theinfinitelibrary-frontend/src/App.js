@@ -19,7 +19,7 @@ function AddBook(props){
   async function submitHandler(ev){
     ev.preventDefault()
     console.log("\n\n\nHit bookadder")
-    const response = fetch("api/addbook",{
+    const response = await fetch("api/addbook",{
       method: "POST",
       body: JSON.stringify({username: props.username, title: title, author:  author})
     });
@@ -29,9 +29,8 @@ function AddBook(props){
       body: JSON.stringify({username:props.username})
     })
 
-    const m = await r2.text()
-    props.setBookList(m)
-
+    const books = await r2.json()
+    props.setBookList(books)
   }
 
   return(
@@ -69,8 +68,13 @@ function Loggedin(props){
        add book to your personal library
       </Link>       
       <p>
-        You have read the following books:.... {props.bookList}
+        You have read the following books:.... 
       </p>
+      <ul>
+        {props.bookList.length>0 ? props.bookList.map(b=>(
+          <li key={b.title + b.author}> {b.title} by {b.author} </li>
+        )) : null}
+      </ul>
     </div>
   )
 }
@@ -136,8 +140,6 @@ function Login(props){
   async function loginHandler(ev){
     ev.preventDefault()
 
-    console.log("\n\n\nCurrent username: ", props.username)
-
     const response = await fetch("/api/login", {
       method: "POST",
       body: JSON.stringify({username: props.username, password:  password})
@@ -145,9 +147,20 @@ function Login(props){
 
     setIsLoggedIn(true)
     const m = await response.text();
-    console.log("Server response: ", m)
     setMessage(m)
-    console.log("Hit here!")
+
+
+
+    const r2 = await fetch("api/getbooks",{
+      method: "POST",
+      body: JSON.stringify({username:props.username})
+    })
+
+    const books = await r2.json()
+    props.setBookList(books)
+
+
+
   }
 
   return(
@@ -219,7 +232,7 @@ function App() {
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("")
 
-  const [bookList, setBookList] = useState("")
+  const [bookList, setBookList] = useState([])
 
   function logtoconsole(){
     console.log("\n\n\nSomebody wants to join the book club!\n\n\n")
@@ -245,19 +258,19 @@ function App() {
       />
       <Route 
       path="/signup"
-      element= <Signup/>
+      element= {<Signup/>}
       />
       <Route 
       path="/login"
-      element= <Login username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList}/>
+      element= {<Login username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList}/>}
       />
       <Route
       path="/loggedin"
-      element= <Loggedin username = {username} setUsername= {setUsername} bookList = {bookList} setBookList = {setBookList}/>
+      element=  {<Loggedin username = {username} setUsername= {setUsername} bookList = {bookList} setBookList = {setBookList}/>}
       />
       <Route
       path="/addbook"
-      element=<AddBook username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList}/>
+      element= {<AddBook username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList}/>}
       />
     </Routes>
 

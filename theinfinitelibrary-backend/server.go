@@ -21,8 +21,8 @@ type User struct {
 }
 
 type Book struct {
-	Title  string `json: "title"`
-	Author string `json: Author`
+	Title  string `json:"title"`
+	Author string `json:"author"`
 }
 
 func main() {
@@ -146,6 +146,7 @@ func main() {
 
 	http.HandleFunc("/api/getbooks", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*") //Allow sharing response with client
+		w.Header().Set("Content-Type", "application/json")
 
 		var bodyContents []byte
 		bodyContents, err = io.ReadAll(r.Body)
@@ -169,17 +170,29 @@ func main() {
 		// err = db.QueryRow("select * from books where member_id=?", memberID).Scan(&result)
 		// row := db.QueryRow("select * from books where member_id=?", memberID)
 
-		rows, _ := db.Query("select title from books where member_id=?", memberID)
-		var b []byte
+		rows, _ := db.Query("select title, author from books where member_id=?", memberID)
 
-		var resp string
+		var books []Book
+
+		var b Book
+
 		for rows.Next() {
-			rows.Scan(&b)
-			resp += string(b)
-			fmt.Println("\n\nlocalbook: ", string(b))
+			rows.Scan(&b.Title, &b.Author)
+
+			books = append(books, b)
+			//resp += b
+			fmt.Println("\n\nlocalbook: ", b.Author, "   ", b.Title)
 		}
 
-		w.Write([]byte(resp))
+		if len(books) == 0 {
+			books = []Book{}
+		}
+
+		jsonBooks, _ := json.Marshal(&books)
+
+		fmt.Println("\n\njsonbooks: ", string(jsonBooks))
+
+		w.Write([]byte(jsonBooks))
 
 		// if err != nil {
 		// 	fmt.Println("db lookup 4 failed with error: ", err)
