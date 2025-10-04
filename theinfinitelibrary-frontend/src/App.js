@@ -1,10 +1,34 @@
 import logo from './logotype.png';
 import './App.css';
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams} from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams, useLocation} from 'react-router-dom';
 import { redirect } from 'react-router';
 
 
+
+
+
+function SecurityInfo(props){
+  
+  const navigate = useNavigate();
+
+
+  let returnButtonString = "Return to " + props.previousSite
+
+  return(
+    <div className="App-header">
+      <h1 className="security-title-style">
+        Security Information
+      </h1>
+      <p className="security-text-style">
+        A text representation of your password is not stored in the database. Rather, a one-way encryption algorithm is applied to your password, the result of which is stored in the database. One-way means that decryption is intractible, making the encryption irreversible in order to inhibit recovery of the password text after encryption. Not storing the text representation in the database means that whoever can access the database, will not be able to access your password, and using the encrypted password can not be used to access your account. Additionally, a random salt is prepended to your password to further strengthen your password privacy (your encrypted password alone will thus be useless in attempts to access other sites using identical encryption). Overall, this approach is taken to preserve the safety of your account and the privacy of your password.
+      </p>
+      <button onClick={() => navigate(-1)} className="button-link">
+        {returnButtonString}
+      </button>
+    </div>
+  )
+}
 
 
 
@@ -12,6 +36,7 @@ function AddBook(props){
 
   const [title, setTitle] = useState("")
   const [author, setAuthor] = useState("")
+  const [addMessage, setAddMessage] = useState("")
 
 
 
@@ -28,13 +53,20 @@ function AddBook(props){
       method: "POST",
       body: JSON.stringify({username:props.username})
     })
-
+    
     const books = await r2.json()
     props.setBookList(books)
+    console.log("\n\n\ntitle: ", title)
+    
+    var pm = title + " was added to your personal library!"
+    console.log("\n\n\ntitle: ", title)
+    
+    setAddMessage(pm)
   }
 
   return(
     <div className="App-header">
+      <Link to = "/Loggedin" className="button-link">return to profile</Link>
       <form className="form-style" onSubmit = {submitHandler}>
         <input
           value={title}
@@ -52,6 +84,7 @@ function AddBook(props){
           Add Book
         </button>
       </form>
+      <p>{addMessage}</p>
     </div>
   )
 }
@@ -65,7 +98,7 @@ function Loggedin(props){
         Welcome back {props.username}!
       </header>
       <Link to = "/addbook" className="button-style">
-       add book to your personal library
+       Add book to your personal library
       </Link>       
       <p>
         You have read the following books:.... 
@@ -81,10 +114,13 @@ function Loggedin(props){
 
 
 
-function Signup(){
+function Signup(props){
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
+
+
+  props.setPreviousSite("signup page")
 
 
   async function submitHandler(ev){
@@ -122,9 +158,10 @@ function Signup(){
         </form>
           {message}
       </header>
-      <pr className="vspace">
-      Irreversible encryption is applied to your password to keep your account safe :) 
-      </pr>
+      <Link to= "/securityinfo" className="security-link-style">
+          Security information.
+      </Link>
+      
     </div>
   );
 }
@@ -136,6 +173,8 @@ function Login(props){
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
   const [isloggedin, setIsLoggedIn] = useState(false)
+
+  props.setPreviousSite("Login page")
 
   async function loginHandler(ev){
     ev.preventDefault()
@@ -187,9 +226,9 @@ function Login(props){
           {message}
           {isloggedin ? <Navigate to = {`/loggedin`}/> : null}          
       </header>
-      <pr className="vspace">
-      Irreversible encryption is applied to your password to keep your account safe :) 
-      </pr>
+      <Link to= "/securityinfo" className="security-link-style">
+          Security information.
+      </Link>
     </div>
   );
 }
@@ -233,6 +272,8 @@ function App() {
   const [username, setUsername] = useState("")
 
   const [bookList, setBookList] = useState([])
+  const [previousSite, setPreviousSite] = useState("")
+
 
   function logtoconsole(){
     console.log("\n\n\nSomebody wants to join the book club!\n\n\n")
@@ -258,11 +299,11 @@ function App() {
       />
       <Route 
       path="/signup"
-      element= {<Signup/>}
+      element= {<Signup previousSite = {previousSite} setPreviousSite = {setPreviousSite}/>}
       />
       <Route 
       path="/login"
-      element= {<Login username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList}/>}
+      element= {<Login username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList} previousSite = {previousSite} setPreviousSite = {setPreviousSite}/>}
       />
       <Route
       path="/loggedin"
@@ -271,6 +312,10 @@ function App() {
       <Route
       path="/addbook"
       element= {<AddBook username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList}/>}
+      />
+      <Route
+      path="/securityinfo"
+      element = {<SecurityInfo previousSite = {previousSite} setPreviousSite = {setPreviousSite} />}
       />
     </Routes>
 
