@@ -1,9 +1,87 @@
 import logo from './logotype.png';
 import './App.css';
-import { useState } from 'react';
+import { useState , useEffect, useRef} from 'react';
 import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams, useLocation} from 'react-router-dom';
 import { redirect } from 'react-router';
 
+
+
+
+
+
+
+
+function ChatRoom(props){
+
+  const [chatmessage, setChatMessage] = useState("")
+  const [chatHistory, setChatHistory] = useState("")
+  const esRef = useRef(null);
+
+
+  useEffect(() => {
+    console.log("\n\n\nhit useffect\n\n\n")
+    const es = new EventSource("http://localhost:8080/api/chatRoom")
+    esRef.current = es;
+    es.onopen = () => console.log("SSE Open")
+    es.onerror = (e) => console.log("SSE Error", e)
+
+
+    es.onmessage = (ev) => {
+      console.log(ev.data)
+      console.log(chatHistory)
+      setChatHistory(previousChatHistory => previousChatHistory + ev.data + "\n\n")
+    }
+
+    return ()=>{
+      es.close()
+    }
+  }, [chatHistory])
+
+
+
+
+  async function logToBackend(ev){
+    ev.preventDefault()
+    const response = await fetch("/api/postMessage", {
+      method: "POST",
+      body: JSON.stringify({message: "Hello!"})
+    })
+  }
+
+  async function submitHandler(ev){
+    ev.preventDefault()
+    console.log("\n\n\nhit here")
+    const response = fetch("api/postMessage", {
+      method: "POST",
+      body: chatmessage
+    })
+  }
+
+  return(
+    <div className="App-header">
+      <form type="text" onSubmit={submitHandler}>
+        <input 
+        value = {chatmessage}
+        onChange = {event => setChatMessage(event.target.value)}
+        />
+        <br/>
+        <br/>
+        <br/>
+        <button type="submit" className="unplaced-button">
+          post message
+        </button>
+      </form>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+      <p className = "chathistory-style">{chatHistory}</p>
+
+    </div>
+  )
+}
 
 
 
@@ -108,6 +186,10 @@ function Loggedin(props){
           <li key={b.title + b.author}> {b.title} by {b.author} </li>
         )) : null}
       </ul>
+      <br/>
+      <Link to = "/chatroom" className="lower-button-style">
+        Enter chat room
+      </Link>
     </div>
   )
 }
@@ -316,6 +398,10 @@ function App() {
       <Route
       path="/securityinfo"
       element = {<SecurityInfo previousSite = {previousSite} setPreviousSite = {setPreviousSite} />}
+      />
+      <Route
+      path="/chatroom"
+      element= {<ChatRoom/>}
       />
     </Routes>
 

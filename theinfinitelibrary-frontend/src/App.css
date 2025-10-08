@@ -56,6 +56,12 @@
   top: 15px
 }
 
+.chathistory-style{
+  white-space-collapse: preserve;
+  height: 300px;
+  top: 100px
+}
+
 
 .button-style{
   background-color: rgb(15, 32, 65);
@@ -70,6 +76,36 @@
   cursor: pointer;
   position: absolute;
   top: 180px;
+  left: 22px;
+}
+
+.unplaced-button{
+  background-color: rgb(15, 32, 65);
+  text-decoration: wavy;
+  color: #e3ebf5;
+  font-weight: bolder;
+  font-size: medium;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 20px 20px;
+  z-index: 1000;
+  border: none;
+  cursor: pointer;
+  position:relative;
+}
+
+.lower-button-style{
+  background-color: rgb(15, 32, 65);
+  text-decoration: wavy;
+  color: #e3ebf5;
+  font-weight: bolder;
+  font-size: medium;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 20px 20px;
+  z-index: 1000;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  top: 280px;
   left: 22px;
 }
 
@@ -144,7 +180,7 @@
 }
 
 .vspace{
-  margin-top: 1000px;
+  margin-top: 20px;
 }
 
 .footer-style{

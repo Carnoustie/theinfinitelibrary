@@ -25,6 +25,9 @@ type Book struct {
 	Author string `json:"author"`
 }
 
+var clients = make(map[http.ResponseWriter]chan string)
+var mainChannel = make(chan string)
+
 func main() {
 	fmt.Println("\n\n\n\nThe Infinite Library Server is running\n\n\n\n")
 
@@ -32,6 +35,9 @@ func main() {
 	db_password := os.Getenv("DB_PASSWORD")
 	db_name := os.Getenv("DB_NAME")
 	db_host := os.Getenv("DB_HOST")
+
+	go broadcaster(mainChannel, clients)
+	// go spawnChatRoom()
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", db_username, db_password, db_host, db_name) //Data Source Name
 	db, err := sql.Open("mysql", dsn)
@@ -205,5 +211,74 @@ func main() {
 		// fmt.Println("\n\nrow: ", row)
 	})
 
+	http.HandleFunc("/api/postMessage", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*") // Allow sharing response with client
+		w.Header().Set("Content-Type", "application/json")
+
+		fmt.Println("\n\nHit here")
+
+		var bodyContents []byte
+		bodyContents, err = io.ReadAll(r.Body)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("\n\nRead from Browser: ", string(bodyContents), "\n\n")
+		mainChannel <- string(bodyContents)
+		fmt.Println("\n\nWrite complete\n\n")
+
+	})
+
+	http.HandleFunc("/api/chatRoom", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*") //Allow sharing response with client
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("X-Accel-Buffering", "no")
+
+		clientChannel := make(chan string)
+
+		clients[w] = clientChannel
+
+		//clients = append(clients, w)
+
+		//var bodyContents []byte
+		flush, ok := w.(http.Flusher)
+		if !ok {
+			http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprintf(w, ": init\n\n")
+		flush.Flush()
+		var message string
+		for {
+			fmt.Println("\n\nHit chat loop\n\n")
+			message = <-clientChannel
+			message = "data: " + message + "\n\n"
+			//message += "\n\n"
+			fmt.Println("\n\nMessage to send:\n\n", message)
+			//time.Sleep(1 * time.Second)
+			// io.ReadAll(r, []byte())
+			fmt.Fprint(w, message)
+			//fmt.Fprint(w, "data: Bonjour\n\n")
+			flush.Flush()
+			//fmt.Println("data: ticked\n\n")
+		}
+	})
+
 	http.ListenAndServe(":8080", nil)
+}
+
+func broadcaster(ch chan string, clients map[http.ResponseWriter]chan string) {
+	var chatMessage string
+
+	for {
+		chatMessage = <-ch
+		fmt.Println("\n\nRead following message: ", chatMessage, "\n\n")
+		for _, channel := range clients {
+			fmt.Println("\n\nhit in broadcast loop\n\n")
+			channel <- chatMessage
+			//fmt.Fprint(client, chatMessage)
+			//client.Write([]byte(chatMessage))
+		}
+	}
 }
