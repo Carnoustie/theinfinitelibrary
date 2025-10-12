@@ -96,10 +96,12 @@ func main() {
 		var salt []byte
 		var pwHash []byte
 		err = db.QueryRow("select salt,password_hash from til_member where username=?", u.Username).Scan(&salt, &pwHash)
+
 		fmt.Println("\n\nUsername: ", u.Username)
 		if err != nil {
 			fmt.Println("DB lookup failed with error: ", err)
-			_, _ = w.Write([]byte("Could not find user."))
+			_, _ = w.Write([]byte("error"))
+			return
 		} else {
 			fmt.Println("\n\nFetched user: ", salt, hex.EncodeToString(pwHash))
 
@@ -182,12 +184,29 @@ func main() {
 
 		var b Book
 
+		var matchedUsers []User
+		var tempStoreUser User
+
+		// var username string
+
 		for rows.Next() {
 			rows.Scan(&b.Title, &b.Author)
 
 			books = append(books, b)
-			//resp += b
-			fmt.Println("\n\nlocalbook: ", b.Author, "   ", b.Title)
+			fmt.Println("\n\nbooktitle: ", b.Title)
+			matchrows, err := db.Query("select username from til_member where id in (select member_id from books where title=?)", b.Title)
+
+			if err == nil {
+				for matchrows.Next() {
+					matchrows.Scan(&tempStoreUser.Username)
+					if tempStoreUser.Username != u.Username {
+						matchedUsers = append(matchedUsers, tempStoreUser)
+						fmt.Println("\n\nmatched user: ", tempStoreUser.Username)
+					}
+				}
+			}
+
+			//fmt.Println("\n\nlocalbook: ", b.Author, "   ", b.Title)
 		}
 
 		if len(books) == 0 {
@@ -195,10 +214,13 @@ func main() {
 		}
 
 		jsonBooks, _ := json.Marshal(&books)
+		jsonMatchedUsers, _ := json.Marshal(&matchedUsers)
 
-		fmt.Println("\n\njsonbooks: ", string(jsonBooks))
+		// fmt.Println("\n\njsonbooks: ", string(jsonBooks))
+		fmt.Println("\n\njsonbooks: ", string(jsonMatchedUsers))
 
 		w.Write([]byte(jsonBooks))
+		// w.Write([]byte(jsonMatchedUsers))
 
 		// if err != nil {
 		// 	fmt.Println("db lookup 4 failed with error: ", err)
