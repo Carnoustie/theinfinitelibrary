@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/argon2"
@@ -21,8 +22,10 @@ type User struct {
 }
 
 type Book struct {
-	Title  string `json:"title"`
-	Author string `json:"author"`
+	Id       int64  `json:id`
+	MemberID int64  `json:"member_id"`
+	Title    string `json:"title"`
+	Author   string `json:"author"`
 }
 
 var clients = make(map[http.ResponseWriter]chan string)
@@ -178,46 +181,143 @@ func main() {
 		// err = db.QueryRow("select * from books where member_id=?", memberID).Scan(&result)
 		// row := db.QueryRow("select * from books where member_id=?", memberID)
 
-		rows, _ := db.Query("select title, author from books where member_id=?", memberID)
+		rows, _ := db.Query("select id, title, author from books where member_id=?", memberID)
 
 		var books []Book
 
+		var allBooks []Book
+
+		var tempBook Book
+		allBookRows, _ := db.Query("select id, member_id, title, author from books")
+		for allBookRows.Next() {
+			allBookRows.Scan(&tempBook.Id, &tempBook.MemberID, &tempBook.Title, &tempBook.Author)
+			allBooks = append(allBooks, tempBook)
+			//fmt.Println("\n\nJust added: ", tempBook.Title)
+		}
+
 		var b Book
 
-		var matchedUsers []User
-		var tempStoreUser User
+		//var matchedUsersIDs []int
 
-		// var username string
+		var levenshteinDist int
+
+		var localUserName string
+
+		countMatchesMap := make(map[int64]int)
+
+		var chatRoomId int64
+
+		var checkChatroomID int64
 
 		for rows.Next() {
-			rows.Scan(&b.Title, &b.Author)
+			rows.Scan(&b.Id, &b.Title, &b.Author)
 
-			books = append(books, b)
-			fmt.Println("\n\nbooktitle: ", b.Title)
-			matchrows, err := db.Query("select username from til_member where id in (select member_id from books where title=?)", b.Title)
+			for _, localbook := range allBooks {
 
-			if err == nil {
-				for matchrows.Next() {
-					matchrows.Scan(&tempStoreUser.Username)
-					if tempStoreUser.Username != u.Username {
-						matchedUsers = append(matchedUsers, tempStoreUser)
-						fmt.Println("\n\nmatched user: ", tempStoreUser.Username)
+				if localbook.MemberID != memberID {
+					// fmt.Println("\n\nlocalBook member ID: ", localbook.MemberID)
+					// fmt.Println("\n\nlogged in member ID: ", memberID)
+					b_front := strings.Split(b.Title, " ")[0]
+					localbook_front := strings.Split(localbook.Title, " ")[0]
+					firstLevenshtein := levenshteinDistance(b_front, localbook_front, len(b_front), len(localbook_front))
+					if firstLevenshtein < 2 {
+						levenshteinDist = levenshteinDistance(strings.ReplaceAll(b.Title, " ", "_"), strings.ReplaceAll(localbook.Title, " ", "_"), len(b.Title), len(localbook.Title))
+						fmt.Println("\n\nComputed Levenshtein: ", levenshteinDist)
+						if levenshteinDist <= 2 {
+							err = db.QueryRow("select username from til_member where id=?", localbook.MemberID).Scan(&localUserName)
+							if err != nil {
+								fmt.Println("\n\nDB lookup 5 failed with error: ", err)
+							}
+							// fmt.Println("\n\nMatched member: ", localUserName)
+							// fmt.Println("\n\nb.Title: ", b.Title)
+							// fmt.Println("\n\nlocalBook.Title: ", localbook.Title)
+							countMatchesMap[localbook.MemberID]++
+							if countMatchesMap[localbook.MemberID] >= 2 {
+								err = db.QueryRow("select chatroom_id from books where id=?", b.Id).Scan(&checkChatroomID)
+								if err != nil {
+									fmt.Println("\n\nfetching chatroom id failed with error: ", err)
+								}
+								// fmt.Println("\n\nfetched: ", checkChatroomID)
+								if checkChatroomID == 0 {
+									_, err = db.Exec("insert into chatroom (book_title) values (?)", b.Title)
+									if err != nil {
+										fmt.Println("\n\ninserting into chatroom failed with error: ", err)
+									} else {
+										err = db.QueryRow("select id from chatroom where book_title = ?", b.Title).Scan(&chatRoomId)
+										if err != nil {
+											fmt.Println("\n\nfetch chatroom id failed with error: ", err)
+										}
+										_, err = db.Exec("update books set chatroom_id = ? where id = ? or id = ?", chatRoomId, b.Id, localbook.Id)
+										if err != nil {
+											fmt.Println("\n\nupdating chatroom id's into books failed with error: ", err)
+										}
+									}
+								} else {
+									_, err = db.Exec("update books set chatroom_id = ? where id = ?", chatRoomId, localbook.Id)
+									if err != nil {
+										fmt.Println("\n\nupdating chatroom id's into books failed with error: ", err)
+									}
+								}
+							}
+						}
 					}
 				}
 			}
 
-			//fmt.Println("\n\nlocalbook: ", b.Author, "   ", b.Title)
+			books = append(books, b)
+			fmt.Println("\n\nbooktitle: ", b.Title)
+
+			//fmt.println("\n\nlocalbook: ", b.author, "   ", b.title)
 		}
+
+		var matchedUsername string
+		for matchedMember, numberOfSharedBooks := range countMatchesMap {
+			fmt.Println("\n\nsharedBookCount: ", numberOfSharedBooks)
+			fmt.Println("\n\nwith member: ", matchedMember)
+			fmt.Println("\n\nlogged in member: ", memberID)
+			if numberOfSharedBooks >= 2 {
+				_ = db.QueryRow("select username from til_member where id=?", matchedMember).Scan(&matchedUsername)
+				fmt.Println("\n\nMatched with member: ", matchedUsername)
+				_, err = db.Exec("insert into chatroom (book_title) ?")
+			}
+		}
+
+		//var tempStoreUser User
+
+		//// var username string
+
+		//var matchedBooks []Book
+
+		//for rows.next() {
+		//	rows.scan(&b.title, &b.author)
+
+		//	books = append(books, b)
+		//	fmt.println("\n\nbooktitle: ", b.title)
+
+		//	matchrows, err := db.query("select username from til_member where id in (select member_id from books where title=?)", b.title)
+
+		//	if err == nil {
+		//		for matchrows.next() {
+		//			matchrows.scan(&tempstoreuser.username)
+		//			if tempstoreuser.username != u.username {
+		//				matchedusers = append(matchedusers, tempstoreuser)
+		//				fmt.println("\n\nmatched user: ", tempstoreuser.username)
+		//			}
+		//		}
+		//	}
+
+		//	//fmt.println("\n\nlocalbook: ", b.author, "   ", b.title)
+		//}
 
 		if len(books) == 0 {
 			books = []Book{}
 		}
 
 		jsonBooks, _ := json.Marshal(&books)
-		jsonMatchedUsers, _ := json.Marshal(&matchedUsers)
+		// jsonMatchedUsers, _ := json.Marshal(&matchedUsers)
 
 		// fmt.Println("\n\njsonbooks: ", string(jsonBooks))
-		fmt.Println("\n\njsonbooks: ", string(jsonMatchedUsers))
+		// fmt.Println("\n\njsonbooks: ", string(jsonMatchedUsers))
 
 		w.Write([]byte(jsonBooks))
 		// w.Write([]byte(jsonMatchedUsers))
@@ -302,5 +402,18 @@ func broadcaster(ch chan string, clients map[http.ResponseWriter]chan string) {
 			//fmt.Fprint(client, chatMessage)
 			//client.Write([]byte(chatMessage))
 		}
+	}
+}
+
+func levenshteinDistance(s1 string, s2 string, len_s1 int, len_s2 int) int {
+	// fmt.Println("\n\ns1: ", s1, "\n\ns2: ", s2, "\n\n")
+	if len_s1 == 0 {
+		return len_s2
+	} else if len_s2 == 0 {
+		return len_s1
+	} else if len_s1 == len_s2 && s1[len_s1-1] == s2[len_s2-1] {
+		return levenshteinDistance(s1, s2, len_s1-1, len_s2-1)
+	} else {
+		return 1 + min(levenshteinDistance(s1, s2, len_s1, len_s2-1), min(levenshteinDistance(s1, s2, len_s1-1, len_s2), levenshteinDistance(s1, s2, len_s1-1, len_s2-1)))
 	}
 }
