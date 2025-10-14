@@ -22,14 +22,25 @@ type User struct {
 }
 
 type Book struct {
-	Id       int64  `json:id`
-	MemberID int64  `json:"member_id"`
-	Title    string `json:"title"`
-	Author   string `json:"author"`
+	Id         int64  `json:id`
+	MemberID   int64  `json:"member_id"`
+	Title      string `json:"title"`
+	Author     string `json:"author"`
+	ChatRoomID int64  `json:"chatroom_id"`
 }
 
 var clients = make(map[http.ResponseWriter]chan string)
-var mainChannel = make(chan string)
+var chatRoomChannels = make(map[string][]chan string)
+
+// var mainChannel = make(chan string)
+// var chatroomChannel = make(chan string)
+
+type ChatPayLoad struct {
+	Message    string
+	ChatRoomID string
+}
+
+var mainChannel = make(chan ChatPayLoad)
 
 func main() {
 	fmt.Println("\n\n\n\nThe Infinite Library Server is running\n\n\n\n")
@@ -39,7 +50,7 @@ func main() {
 	db_name := os.Getenv("DB_NAME")
 	db_host := os.Getenv("DB_HOST")
 
-	go broadcaster(mainChannel, clients)
+	go broadcaster(mainChannel, chatRoomChannels)
 	// go spawnChatRoom()
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", db_username, db_password, db_host, db_name) //Data Source Name
@@ -264,10 +275,18 @@ func main() {
 				}
 			}
 
-			books = append(books, b)
+			// books = append(books, b)
 			fmt.Println("\n\nbooktitle: ", b.Title)
 
 			//fmt.println("\n\nlocalbook: ", b.author, "   ", b.title)
+		}
+
+		rows, _ = db.Query("select id, title, author, chatroom_id from books where member_id=?", memberID)
+
+		for rows.Next() {
+			rows.Scan(&b.Id, &b.Title, &b.Author, &b.ChatRoomID)
+			fmt.Println("\n\nappending book: ", b.Title)
+			books = append(books, b)
 		}
 
 		var matchedUsername string
@@ -333,33 +352,42 @@ func main() {
 		// fmt.Println("\n\nrow: ", row)
 	})
 
-	http.HandleFunc("/api/postMessage", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/postMessage/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*") // Allow sharing response with client
 		w.Header().Set("Content-Type", "application/json")
 
+		chatId := strings.TrimPrefix(r.URL.Path, "/api/postMessage/")
 		fmt.Println("\n\nHit here")
 
+		fmt.Println("\n\nhit postmessage api with chatid: ", chatId)
 		var bodyContents []byte
 		bodyContents, err = io.ReadAll(r.Body)
 		if err != nil {
 			panic(err)
 		}
 		fmt.Println("\n\nRead from Browser: ", string(bodyContents), "\n\n")
-		mainChannel <- string(bodyContents)
+		mainChannel <- ChatPayLoad{
+			Message:    string(bodyContents),
+			ChatRoomID: chatId,
+		}
 		fmt.Println("\n\nWrite complete\n\n")
 
 	})
 
-	http.HandleFunc("/api/chatRoom", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/chatRoom/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*") //Allow sharing response with client
 		w.Header().Set("Content-Type", "text/event-stream")
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Connection", "keep-alive")
 		w.Header().Set("X-Accel-Buffering", "no")
 
+		chatId := strings.TrimPrefix(r.URL.Path, "/api/chatRoom/")
+
+		fmt.Println("\n\nhit chatroom api with chatid: ", chatId)
+
 		clientChannel := make(chan string)
 
-		clients[w] = clientChannel
+		chatRoomChannels[chatId] = append(chatRoomChannels[chatId], clientChannel)
 
 		//clients = append(clients, w)
 
@@ -390,17 +418,21 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
-func broadcaster(ch chan string, clients map[http.ResponseWriter]chan string) {
-	var chatMessage string
-
+func broadcaster(mainChan chan ChatPayLoad, chatRooms map[string][]chan string) {
+	var payload ChatPayLoad
 	for {
-		chatMessage = <-ch
-		fmt.Println("\n\nRead following message: ", chatMessage, "\n\n")
-		for _, channel := range clients {
-			fmt.Println("\n\nhit in broadcast loop\n\n")
-			channel <- chatMessage
-			//fmt.Fprint(client, chatMessage)
-			//client.Write([]byte(chatMessage))
+		payload = <-mainChan
+		fmt.Println("\n\nRead following message: ", payload.Message, "\n\n")
+		for chatid, channels := range chatRooms {
+			fmt.Println("writing in channel ", chatid)
+			if payload.ChatRoomID == chatid {
+				for _, channel := range channels {
+					fmt.Println("\n\nhit in broadcast loop\n\n")
+					channel <- payload.Message
+					//fmt.Fprint(client, chatMessage)
+					//client.Write([]byte(chatMessage))
+				}
+			}
 		}
 	}
 }

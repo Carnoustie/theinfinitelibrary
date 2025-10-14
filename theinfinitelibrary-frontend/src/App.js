@@ -7,12 +7,9 @@ import { redirect } from 'react-router';
 
 
 
-
-
-
-
 function ChatRoom(props){
 
+  const {chatId} = useParams()
   const [chatmessage, setChatMessage] = useState("")
   const [chatHistory, setChatHistory] = useState("")
   const esRef = useRef(null);
@@ -20,7 +17,7 @@ function ChatRoom(props){
 
   useEffect(() => {
     console.log("\n\n\nhit useffect\n\n\n")
-    const es = new EventSource("http://localhost:8080/api/chatRoom")
+    const es = new EventSource(`http://localhost:8080/api/chatRoom/${chatId}`)
     esRef.current = es;
     es.onopen = () => console.log("SSE Open")
     es.onerror = (e) => console.log("SSE Error", e)
@@ -42,7 +39,7 @@ function ChatRoom(props){
 
   async function logToBackend(ev){
     ev.preventDefault()
-    const response = await fetch("/api/postMessage", {
+    const response = await fetch(`/api/postMessage${chatId}`, {
       method: "POST",
       body: JSON.stringify({message: "Hello!"})
     })
@@ -51,7 +48,7 @@ function ChatRoom(props){
   async function submitHandler(ev){
     ev.preventDefault()
     console.log("\n\n\nhit here")
-    const response = fetch("api/postMessage", {
+    const response = fetch(`/api/postMessage/${chatId}`, {
       method: "POST",
       body: chatmessage
     })
@@ -181,9 +178,11 @@ function Loggedin(props){
       <p>
         You have read the following books:.... 
       </p>
-      <ul>
+      <ul className='book-list'>
         {props.bookList.length>0 ? props.bookList.map(b=>(
-          <li key={b.title + b.author}> {b.title} by {b.author} </li>
+          <li key={b.title + b.author} className='book-item'> <p>{b.title} by {b.author}</p> 
+            <Link to = {`/chatroom/${b.chatroom_id}`} className="lower-button-unfixed"> Enter book chat!</Link>
+          </li>
         )) : null}
       </ul>
       <br/>
@@ -278,6 +277,7 @@ function Login(props){
     })
 
     const books = await r2.json()
+    
     props.setBookList(books)
 
 
@@ -355,6 +355,7 @@ function App() {
 
   const [bookList, setBookList] = useState([])
   const [previousSite, setPreviousSite] = useState("")
+  const [chatRooms, setChatRooms] = useState([])
 
 
   function logtoconsole(){
@@ -385,7 +386,7 @@ function App() {
       />
       <Route 
       path="/login"
-      element= {<Login username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList} previousSite = {previousSite} setPreviousSite = {setPreviousSite}/>}
+      element= {<Login username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList} previousSite = {previousSite} setPreviousSite = {setPreviousSite} chatRooms = {chatRooms} setChatRooms = {setChatRooms}/>}
       />
       <Route
       path="/loggedin"
@@ -402,6 +403,9 @@ function App() {
       <Route
       path="/chatroom"
       element= {<ChatRoom/>}
+      />
+      <Route
+      path="/chatroom/:chatId" element = {<ChatRoom/>}
       />
     </Routes>
 
