@@ -93,6 +93,22 @@
   position:relative;
 }
 
+.book-list{
+  list-style: none;
+  padding: 0;
+  width: 80%;
+  margin: 0 auto;
+}
+
+.book-item{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 8px 0;
+  border-bottom: 4px solid rgb(9, 9, 105);
+}
+
 .lower-button-style{
   background-color: rgb(15, 32, 65);
   text-decoration: wavy;
@@ -107,6 +123,19 @@
   position: absolute;
   top: 280px;
   left: 22px;
+}
+
+.lower-button-unfixed{
+  background-color: rgb(15, 32, 65);
+  color: #e3ebf5;
+  font-weight: 700;
+  font-size: medium;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 12px 16px;
+  border-radius: 8px;
+  text-decoration: none;   /* not 'wavy' */
+  cursor: pointer;
+  margin-top: 8px;
 }
 
 .button-link{
