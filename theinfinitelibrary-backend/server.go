@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"database/sql"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -29,17 +28,13 @@ type Book struct {
 	ChatRoomID int64  `json:"chatroom_id"`
 }
 
-var clients = make(map[http.ResponseWriter]chan string)
-var chatRoomChannels = make(map[string][]chan string)
-
-// var mainChannel = make(chan string)
-// var chatroomChannel = make(chan string)
-
 type ChatPayLoad struct {
 	Message    string
 	ChatRoomID string
 }
 
+var clients = make(map[http.ResponseWriter]chan string)
+var chatRoomChannels = make(map[string][]chan string)
 var mainChannel = make(chan ChatPayLoad)
 
 func main() {
@@ -51,12 +46,12 @@ func main() {
 	db_host := os.Getenv("DB_HOST")
 
 	go broadcaster(mainChannel, chatRoomChannels)
-	// go spawnChatRoom()
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", db_username, db_password, db_host, db_name) //Data Source Name
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		panic(err)
+		fmt.Printf("\n\nCould not open Database due to error %s, terminating server", err)
+		os.Exit(1)
 	}
 
 	//responds to health-checks in the cluster
@@ -71,12 +66,16 @@ func main() {
 		var bodyContents []byte
 		bodyContents, err = io.ReadAll(r.Body)
 		if err != nil {
-			panic(err)
+			fmt.Printf("\n\nfailed reading membership signup request with error %s", err)
+			return
 		}
 
 		var u User
-		_ = json.Unmarshal(bodyContents, &u) //parse json into user
-
+		err = json.Unmarshal(bodyContents, &u) //parse json into user
+		if err != nil {
+			fmt.Printf("\n\nJSON parsing in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
+			return
+		}
 		//append salt to password to circumvent duplication_
 		salt := make([]byte, 16)
 		_, _ = rand.Read(salt)
@@ -100,33 +99,36 @@ func main() {
 		var bodyContents []byte
 		bodyContents, err = io.ReadAll(r.Body)
 		if err != nil {
-			panic(err)
+			fmt.Printf("\n\nfailed parsing login request with error %s", err)
+			return
 		}
 
 		var u User
-		_ = json.Unmarshal(bodyContents, &u) //allow sharing response with client
+		err = json.Unmarshal(bodyContents, &u) //allow sharing response with client
+		if err != nil {
+			fmt.Printf("\n\nJSON parsing in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
+			return
+		}
 
 		//fetching user from DB
 		var salt []byte
 		var pwHash []byte
 		err = db.QueryRow("select salt,password_hash from til_member where username=?", u.Username).Scan(&salt, &pwHash)
-
-		fmt.Println("\n\nUsername: ", u.Username)
 		if err != nil {
-			fmt.Println("DB lookup failed with error: ", err)
+			fmt.Printf("DB lookup of user in login failed with error: ", err)
 			_, _ = w.Write([]byte("error"))
 			return
 		} else {
-			fmt.Println("\n\nFetched user: ", salt, hex.EncodeToString(pwHash))
-
 			//Validate password used at login
 			encryptedPassword := argon2.IDKey([]byte(u.Password), salt, 1, 64*1024, 4, 32)
 			passwordValidation := subtle.ConstantTimeCompare(pwHash, encryptedPassword) //conceal comparison match times for security
-
 			if passwordValidation == 1 {
+				fmt.Printf("\n\nUser %s retrieved from database and password successfully validated for login", u.Username)
 				_, _ = w.Write([]byte("Welcome Back! :)"))
 			} else {
+				fmt.Printf("\n\nUser %s retrieved from database but password was invalid for login", u.Username)
 				_, _ = w.Write([]byte("Wrong Password!"))
+				return
 			}
 		}
 
@@ -138,31 +140,36 @@ func main() {
 		var bodyContents []byte
 		bodyContents, err := io.ReadAll(r.Body)
 		if err != nil {
-			panic(err)
+			fmt.Printf("\n\nParsing payload in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
+			return
 		}
-
-		fmt.Println("\n\nbody: ", string(bodyContents))
 
 		var bk Book
 		var u User
 		err = json.Unmarshal(bodyContents, &bk)
+		if err != nil {
+			fmt.Printf("\n\nJSON parsing in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
+			return
+		}
 		err = json.Unmarshal(bodyContents, &u)
 		if err != nil {
-			panic(err)
+			fmt.Printf("\n\nJSON parsing in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
+			return
 		}
-		fmt.Println("\n\nTitle: ", bk.Title, "\n\nAuthor: ", bk.Author)
 
 		var userID int
 		err = db.QueryRow("select id from til_member where username=?", u.Username).Scan(&userID)
 		if err != nil {
-			fmt.Println("db lookup 1 failed with error: ", err)
+			fmt.Printf("\n\nDatabase lookup of member %s failed with error %s\n\n", u.Username, err)
+			return
 		}
-
-		fmt.Println("\n\nQuery result: ", int64(userID))
 
 		_, err = db.Exec("insert into books (member_id, title, author) values(?,?,?)", userID, bk.Title, bk.Author)
 		if err != nil {
-			fmt.Println("db insert 2 failed with", err)
+			fmt.Printf("\n\nDatabase insert of book %s with title %s by member %s failed with error %s\n\n", bk.Title, bk.Author, u.Username, err)
+			return
+		} else {
+			fmt.Printf("\n\nAdded book with title %s and author %s for user %s", bk.Title, bk.Author, u.Username)
 		}
 	})
 
@@ -173,61 +180,54 @@ func main() {
 		var bodyContents []byte
 		bodyContents, err = io.ReadAll(r.Body)
 		if err != nil {
-			panic(err)
+			fmt.Printf("\n\nFailed parsing HTTP request to %s with error %s", r.URL.Path, err)
 		}
 
 		var u User
-
 		err = json.Unmarshal(bodyContents, &u)
 		if err != nil {
-			panic(err)
+			fmt.Printf("\n\nJSON parsing in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
+			return
 		}
+
 		var memberID int64
 		err := db.QueryRow("select id from til_member where username=?", u.Username).Scan(&memberID)
 		if err != nil {
-			fmt.Println("db lookup 3 failed with error: ", err)
+			fmt.Printf("Database lookup of member in HTTP request to %s failed with error: ", r.URL.Path, err)
+			return
 		}
-		// var result []string
 
-		// err = db.QueryRow("select * from books where member_id=?", memberID).Scan(&result)
-		// row := db.QueryRow("select * from books where member_id=?", memberID)
-
-		rows, _ := db.Query("select id, title, author from books where member_id=?", memberID)
+		rows, err := db.Query("select id, title, author from books where member_id=?", memberID)
+		if err != nil {
+			fmt.Printf("Database lookup of book in HTTP request to %s failed with error: ", r.URL.Path, err)
+			return
+		}
 
 		var books []Book
-
 		var allBooks []Book
-
 		var tempBook Book
-		allBookRows, _ := db.Query("select id, member_id, title, author from books")
+		allBookRows, err := db.Query("select id, member_id, title, author from books")
+		if err != nil {
+			fmt.Printf("Database lookup of book in HTTP request to %s failed with error: ", r.URL.Path, err)
+			return
+		}
+
 		for allBookRows.Next() {
 			allBookRows.Scan(&tempBook.Id, &tempBook.MemberID, &tempBook.Title, &tempBook.Author)
 			allBooks = append(allBooks, tempBook)
-			//fmt.Println("\n\nJust added: ", tempBook.Title)
 		}
 
 		var b Book
-
-		//var matchedUsersIDs []int
-
 		var levenshteinDist int
-
 		var localUserName string
-
 		countMatchesMap := make(map[int64]int)
-
 		var chatRoomId int64
-
 		var checkChatroomID int64
-
 		for rows.Next() {
 			rows.Scan(&b.Id, &b.Title, &b.Author)
 
 			for _, localbook := range allBooks {
-
 				if localbook.MemberID != memberID {
-					// fmt.Println("\n\nlocalBook member ID: ", localbook.MemberID)
-					// fmt.Println("\n\nlogged in member ID: ", memberID)
 					b_front := strings.Split(b.Title, " ")[0]
 					localbook_front := strings.Split(localbook.Title, " ")[0]
 					firstLevenshtein := levenshteinDistance(b_front, localbook_front, len(b_front), len(localbook_front))
@@ -237,36 +237,37 @@ func main() {
 						if levenshteinDist <= 2 {
 							err = db.QueryRow("select username from til_member where id=?", localbook.MemberID).Scan(&localUserName)
 							if err != nil {
-								fmt.Println("\n\nDB lookup 5 failed with error: ", err)
+								fmt.Printf("Database lookup of user %d in HTTP request to %s failed with error: ", localbook.MemberID, r.URL.Path, err)
 							}
-							// fmt.Println("\n\nMatched member: ", localUserName)
-							// fmt.Println("\n\nb.Title: ", b.Title)
-							// fmt.Println("\n\nlocalBook.Title: ", localbook.Title)
+
 							countMatchesMap[localbook.MemberID]++
 							if countMatchesMap[localbook.MemberID] >= 2 {
 								err = db.QueryRow("select chatroom_id from books where id=?", b.Id).Scan(&checkChatroomID)
 								if err != nil {
-									fmt.Println("\n\nfetching chatroom id failed with error: ", err)
+									fmt.Printf("Database lookup of chatroom in HTTP request to %s failed with error: ", r.URL.Path, err)
 								}
+
 								// fmt.Println("\n\nfetched: ", checkChatroomID)
 								if checkChatroomID == 0 {
 									_, err = db.Exec("insert into chatroom (book_title) values (?)", b.Title)
+
 									if err != nil {
-										fmt.Println("\n\ninserting into chatroom failed with error: ", err)
+										fmt.Printf("Database insertion of book into chatroom in HTTP request to %s failed with error: ", r.URL.Path, err)
 									} else {
 										err = db.QueryRow("select id from chatroom where book_title = ?", b.Title).Scan(&chatRoomId)
 										if err != nil {
-											fmt.Println("\n\nfetch chatroom id failed with error: ", err)
+											fmt.Printf("Database lookup of chatroom in HTTP request to %s failed with error: ", r.URL.Path, err)
 										}
+
 										_, err = db.Exec("update books set chatroom_id = ? where id = ? or id = ?", chatRoomId, b.Id, localbook.Id)
 										if err != nil {
-											fmt.Println("\n\nupdating chatroom id's into books failed with error: ", err)
+											fmt.Printf("Database update of books in HTTP request to %s failed with error: ", r.URL.Path, err)
 										}
 									}
 								} else {
 									_, err = db.Exec("update books set chatroom_id = ? where id = ?", chatRoomId, localbook.Id)
 									if err != nil {
-										fmt.Println("\n\nupdating chatroom id's into books failed with error: ", err)
+										fmt.Printf("Database update of books in HTTP request to %s failed with error: ", r.URL.Path, err)
 									}
 								}
 							}
@@ -275,17 +276,16 @@ func main() {
 				}
 			}
 
-			// books = append(books, b)
-			fmt.Println("\n\nbooktitle: ", b.Title)
-
-			//fmt.println("\n\nlocalbook: ", b.author, "   ", b.title)
 		}
 
-		rows, _ = db.Query("select id, title, author, chatroom_id from books where member_id=?", memberID)
+		fmt.Println("\n\nCompleted chatroom assignment updates for books in Database in HTTP request to %s", r.URL.Path)
+		rows, err = db.Query("select id, title, author, chatroom_id from books where member_id=?", memberID)
+		if err != nil {
+			fmt.Printf("Database lookup of book in HTTP request to %s failed with error: ", r.URL.Path, err)
+		}
 
 		for rows.Next() {
 			rows.Scan(&b.Id, &b.Title, &b.Author, &b.ChatRoomID)
-			fmt.Println("\n\nappending book: ", b.Title)
 			books = append(books, b)
 		}
 
@@ -295,61 +295,25 @@ func main() {
 			fmt.Println("\n\nwith member: ", matchedMember)
 			fmt.Println("\n\nlogged in member: ", memberID)
 			if numberOfSharedBooks >= 2 {
-				_ = db.QueryRow("select username from til_member where id=?", matchedMember).Scan(&matchedUsername)
+				err = db.QueryRow("select username from til_member where id=?", matchedMember).Scan(&matchedUsername)
+				if err != nil {
+					fmt.Printf("Database lookup of username in HTTP request to %s failed with error: ", r.URL.Path, err)
+				}
+
 				fmt.Println("\n\nMatched with member: ", matchedUsername)
 				_, err = db.Exec("insert into chatroom (book_title) ?")
+				if err != nil {
+					fmt.Printf("Database insert into chatroom in HTTP request to %s failed with error: ", r.URL.Path, err)
+				}
 			}
 		}
-
-		//var tempStoreUser User
-
-		//// var username string
-
-		//var matchedBooks []Book
-
-		//for rows.next() {
-		//	rows.scan(&b.title, &b.author)
-
-		//	books = append(books, b)
-		//	fmt.println("\n\nbooktitle: ", b.title)
-
-		//	matchrows, err := db.query("select username from til_member where id in (select member_id from books where title=?)", b.title)
-
-		//	if err == nil {
-		//		for matchrows.next() {
-		//			matchrows.scan(&tempstoreuser.username)
-		//			if tempstoreuser.username != u.username {
-		//				matchedusers = append(matchedusers, tempstoreuser)
-		//				fmt.println("\n\nmatched user: ", tempstoreuser.username)
-		//			}
-		//		}
-		//	}
-
-		//	//fmt.println("\n\nlocalbook: ", b.author, "   ", b.title)
-		//}
 
 		if len(books) == 0 {
 			books = []Book{}
 		}
 
 		jsonBooks, _ := json.Marshal(&books)
-		// jsonMatchedUsers, _ := json.Marshal(&matchedUsers)
-
-		// fmt.Println("\n\njsonbooks: ", string(jsonBooks))
-		// fmt.Println("\n\njsonbooks: ", string(jsonMatchedUsers))
-
 		w.Write([]byte(jsonBooks))
-		// w.Write([]byte(jsonMatchedUsers))
-
-		// if err != nil {
-		// 	fmt.Println("db lookup 4 failed with error: ", err)
-		// }
-
-		fmt.Println("\n\nmemberID: ", memberID)
-
-		// fmt.Println("\n\nBookarray: ", result)
-
-		// fmt.Println("\n\nrow: ", row)
 	})
 
 	http.HandleFunc("/api/postMessage/", func(w http.ResponseWriter, r *http.Request) {
@@ -357,14 +321,16 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 
 		chatId := strings.TrimPrefix(r.URL.Path, "/api/postMessage/")
-		fmt.Println("\n\nHit here")
+		fmt.Println("\n\nEntered API endpoint %s", r.URL.Path)
 
 		fmt.Println("\n\nhit postmessage api with chatid: ", chatId)
 		var bodyContents []byte
 		bodyContents, err = io.ReadAll(r.Body)
 		if err != nil {
-			panic(err)
+			fmt.Printf("\n\nParsing payload in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
+			return
 		}
+
 		fmt.Println("\n\nRead from Browser: ", string(bodyContents), "\n\n")
 		mainChannel <- ChatPayLoad{
 			Message:    string(bodyContents),
@@ -383,35 +349,24 @@ func main() {
 
 		chatId := strings.TrimPrefix(r.URL.Path, "/api/chatRoom/")
 
-		fmt.Println("\n\nhit chatroom api with chatid: ", chatId)
+		fmt.Println("\n\nEntered chatroom api with chatid: ", chatId)
 
 		clientChannel := make(chan string)
-
 		chatRoomChannels[chatId] = append(chatRoomChannels[chatId], clientChannel)
-
-		//clients = append(clients, w)
-
-		//var bodyContents []byte
 		flush, ok := w.(http.Flusher)
 		if !ok {
 			http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
 			return
 		}
-		fmt.Fprintf(w, ": init\n\n")
-		flush.Flush()
+
 		var message string
 		for {
-			fmt.Println("\n\nHit chat loop\n\n")
+			fmt.Println("\n\nEntered chat loop in chatroom api\n\n")
 			message = <-clientChannel
 			message = "data: " + message + "\n\n"
-			//message += "\n\n"
 			fmt.Println("\n\nMessage to send:\n\n", message)
-			//time.Sleep(1 * time.Second)
-			// io.ReadAll(r, []byte())
 			fmt.Fprint(w, message)
-			//fmt.Fprint(w, "data: Bonjour\n\n")
 			flush.Flush()
-			//fmt.Println("data: ticked\n\n")
 		}
 	})
 
@@ -427,10 +382,8 @@ func broadcaster(mainChan chan ChatPayLoad, chatRooms map[string][]chan string) 
 			fmt.Println("writing in channel ", chatid)
 			if payload.ChatRoomID == chatid {
 				for _, channel := range channels {
-					fmt.Println("\n\nhit in broadcast loop\n\n")
 					channel <- payload.Message
-					//fmt.Fprint(client, chatMessage)
-					//client.Write([]byte(chatMessage))
+					fmt.printf("\n\nBroadcasted message%s in chatroom channel %s", payloadm.Message, chatid)
 				}
 			}
 		}
@@ -438,7 +391,6 @@ func broadcaster(mainChan chan ChatPayLoad, chatRooms map[string][]chan string) 
 }
 
 func levenshteinDistance(s1 string, s2 string, len_s1 int, len_s2 int) int {
-	// fmt.Println("\n\ns1: ", s1, "\n\ns2: ", s2, "\n\n")
 	if len_s1 == 0 {
 		return len_s2
 	} else if len_s2 == 0 {
