@@ -29,8 +29,9 @@ type Book struct {
 }
 
 type ChatPayLoad struct {
-	Message    string
-	ChatRoomID string
+	Message    string `json:message`
+	ChatRoomID string `json:chatroomid`
+	Username   string `json:username`
 }
 
 var clients = make(map[http.ResponseWriter]chan string)
@@ -325,17 +326,22 @@ func main() {
 
 		fmt.Println("\n\nhit postmessage api with chatid: ", chatId)
 		var bodyContents []byte
+		var payload ChatPayLoad
 		bodyContents, err = io.ReadAll(r.Body)
 		if err != nil {
 			fmt.Printf("\n\nParsing payload in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
 			return
 		}
 
-		fmt.Println("\n\nRead from Browser: ", string(bodyContents), "\n\n")
-		mainChannel <- ChatPayLoad{
-			Message:    string(bodyContents),
-			ChatRoomID: chatId,
+		err = json.Unmarshal(bodyContents, &payload)
+		if err != nil {
+			fmt.Printf("\n\nJSON parsing in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
+			return
 		}
+
+		fmt.Println("\n\nRead from Browser: ", payload.Message, "\n\n")
+		mainChannel <- payload
+
 		fmt.Println("\n\nWrite complete\n\n")
 
 	})
@@ -382,8 +388,8 @@ func broadcaster(mainChan chan ChatPayLoad, chatRooms map[string][]chan string) 
 			fmt.Println("writing in channel ", chatid)
 			if payload.ChatRoomID == chatid {
 				for _, channel := range channels {
-					channel <- payload.Message
-					fmt.printf("\n\nBroadcasted message%s in chatroom channel %s", payloadm.Message, chatid)
+					channel <- payload.Username + ": " + payload.Message
+					fmt.Printf("\n\nBroadcasted message%s in chatroom channel %s", payload.Message, chatid)
 				}
 			}
 		}
