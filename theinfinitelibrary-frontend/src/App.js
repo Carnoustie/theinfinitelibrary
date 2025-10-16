@@ -13,15 +13,13 @@ function ChatRoom(props){
   const [chatmessage, setChatMessage] = useState("")
   const [chatHistory, setChatHistory] = useState("")
   const esRef = useRef(null);
-
+  const navigate = useNavigate()
 
   useEffect(() => {
-    console.log("\n\n\nhit useffect\n\n\n")
     const es = new EventSource(`http://localhost:8080/api/chatRoom/${chatId}`)
     esRef.current = es;
     es.onopen = () => console.log("SSE Open")
     es.onerror = (e) => console.log("SSE Error", e)
-
 
     es.onmessage = (ev) => {
       console.log(ev.data)
@@ -34,32 +32,22 @@ function ChatRoom(props){
     }
   }, [chatHistory])
 
-
-
-
-  async function logToBackend(ev){
-    ev.preventDefault()
-    const response = await fetch(`/api/postMessage${chatId}`, {
-      method: "POST",
-      body: JSON.stringify({message: "Hello!"})
-    })
-  }
-
   async function submitHandler(ev){
     ev.preventDefault()
     console.log("\n\n\nhit here")
     const response = fetch(`/api/postMessage/${chatId}`, {
       method: "POST",
-      body: chatmessage
+      body: JSON.stringify({message: chatmessage, chatroomid: chatId, username: props.username})
     })
   }
 
   return(
     <div className="App-header">
-      <form type="text" onSubmit={submitHandler}>
-        <input 
+      <form type="textarea" onSubmit={submitHandler}>
+        <textarea
         value = {chatmessage}
         onChange = {event => setChatMessage(event.target.value)}
+        className='chat-input-form'
         />
         <br/>
         <br/>
@@ -75,7 +63,9 @@ function ChatRoom(props){
         <br/>
         <br/>
       <p className = "chathistory-style">{chatHistory}</p>
-
+      <button onClick={() => navigate(-1)} className="upper-button-link">
+        Return to personal library
+      </button>
     </div>
   )
 }
@@ -86,7 +76,6 @@ function ChatRoom(props){
 function SecurityInfo(props){
   
   const navigate = useNavigate();
-
 
   let returnButtonString = "Return to " + props.previousSite
 
@@ -112,9 +101,6 @@ function AddBook(props){
   const [title, setTitle] = useState("")
   const [author, setAuthor] = useState("")
   const [addMessage, setAddMessage] = useState("")
-
-
-
 
   async function submitHandler(ev){
     ev.preventDefault()
@@ -171,12 +157,13 @@ function Loggedin(props){
     <div className="App-header">
       <header>
         Welcome back {props.username}!
+        <br/>
+        You have read the following books:
       </header>
       <Link to = "/addbook" className="button-style">
        Add book to your personal library
       </Link>       
       <p>
-        You have read the following books:.... 
       </p>
       <ul className='book-list'>
         {props.bookList.length>0 ? props.bookList.map(b=>(
@@ -185,10 +172,6 @@ function Loggedin(props){
           </li>
         )) : null}
       </ul>
-      <br/>
-      <Link to = "/chatroom" className="lower-button-style">
-        Enter chat room
-      </Link>
     </div>
   )
 }
@@ -401,11 +384,7 @@ function App() {
       element = {<SecurityInfo previousSite = {previousSite} setPreviousSite = {setPreviousSite} />}
       />
       <Route
-      path="/chatroom"
-      element= {<ChatRoom/>}
-      />
-      <Route
-      path="/chatroom/:chatId" element = {<ChatRoom/>}
+      path="/chatroom/:chatId" element = {<ChatRoom username={username} setUsername={setUsername}/>}
       />
     </Routes>
 
