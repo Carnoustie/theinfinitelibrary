@@ -47,6 +47,22 @@
   top: 140px
 }
 
+.chat-input-form{
+  background-color: #bed9eb;
+  border: 2px solid transparent;
+  padding-top: 0.5rem;
+  line-height: 1.2;
+  transition: all 0.3s ease;
+  font-family: 'Courier New', Courier, monospace;
+  font-size:large;
+  border-color: #251602;
+  box-shadow: 0 0 0 3px rgba(244,144,182,0.2);
+  width: 400px;
+  height: 150px;
+  text-align: left;
+  vertical-align: top;
+}
+
 .security-title-style{
   font-family: 'Courier New', Courier, monospace;
   font-size:larger;
@@ -151,6 +167,22 @@
   cursor: pointer;
   top: 400px;
   left: 200px;
+}
+
+.upper-button-link{
+  background-color: rgb(15, 32, 65);
+  text-decoration: wavy;
+  color: #e3ebf5;
+  font-weight: bolder;
+  font-size: medium;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 20px 20px;
+  z-index: 1000;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  top: 50px;
+  left: 60px;
 }
 
 .form-style{
