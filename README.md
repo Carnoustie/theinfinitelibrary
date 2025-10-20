@@ -6,7 +6,7 @@ after which you will be prompted for your mysql password. The created mysql data
 
 To compile and run the backend, execute `go run .` while standing in the folder `theinfinitelibrary-backend`.
 
-To run the frontend, execute `npm start` while standing in the folder `theinfinitelibrary-frontend`
+Befor running the frontend, one must fetch the dependencies used in the frontend by running `npm install` standing in the folder `theinfinitelibrary-frontend`. To then run the frontend, execute `npm start` while standing in the folder `theinfinitelibrary-frontend`
 
 Frontend runs at an adress hooked to the following domain name:
 
