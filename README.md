@@ -8,6 +8,8 @@ To compile and run the backend, execute `go run .` while standing in the folder 
 
 Before running the frontend, one must fetch the dependencies used in the frontend by running `npm install` standing in the folder `theinfinitelibrary-frontend`. To then run the frontend, execute `npm start` while standing in the folder <br> `theinfinitelibrary-frontend`
 
+# Frontend routing tree:
+
 <p align="left">
   <img src="React_router_tree.png" alt="Graddict" width="50%">
 </p>
