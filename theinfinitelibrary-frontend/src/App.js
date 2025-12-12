@@ -184,6 +184,10 @@ function Signup(props){
   const [message, setMessage] = useState("")
 
 
+  function returnToHome(){
+    
+  }
+
   props.setPreviousSite("signup page")
 
 
@@ -209,6 +213,9 @@ function Signup(props){
             placeholder="Choose a username"
           />
           <br/>
+          <Link to = "/" className='return-button-style'>
+              return to home
+          </Link>
           <br/>
           <input
             value = {password}
@@ -340,16 +347,8 @@ function App() {
   const [previousSite, setPreviousSite] = useState("")
   const [chatRooms, setChatRooms] = useState([])
 
-
-  function logtoconsole(){
-    console.log("\n\n\nSomebody wants to join the book club!\n\n\n")
-    fetch("/api/").then(res => res.text()).then(data => {
-      console.log(data);
-      setMessage(data);
-    })
-  }
-
   const join_prompt = "Join The Infinite Library!"
+  
   return (
     <BrowserRouter>
 
@@ -359,7 +358,6 @@ function App() {
         <Home
           message={message}
           join_prompt={join_prompt}
-          logtoconsole={logtoconsole}
         />
         }
       />

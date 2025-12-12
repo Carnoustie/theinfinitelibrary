@@ -95,6 +95,16 @@
   left: 22px;
 }
 
+.return-button-style{
+  font-family: 'Courier New', Courier, monospace;
+  font-size:small;
+  font-weight: bolder;
+  color: rgb(86, 8, 150);
+  position: absolute;
+  top: -80px;
+  left: -180px;
+}
+
 .unplaced-button{
   background-color: rgb(15, 32, 65);
   text-decoration: wavy;

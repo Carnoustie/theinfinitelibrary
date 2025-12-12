@@ -244,7 +244,7 @@ func GetBooksHandler(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	fmt.Println("\n\nCompleted chatroom assignment updates for books in Database in HTTP request to %s", r.URL.Path)
+	fmt.Printf("\n\nCompleted chatroom assignment updates for books in Database in HTTP request to %s", r.URL.Path)
 	rows, err = db.Query("select id, title, author, chatroom_id from books where member_id=?", memberID)
 	if err != nil {
 		fmt.Printf("Database lookup of book in HTTP request to %s failed with error: ", r.URL.Path, err)

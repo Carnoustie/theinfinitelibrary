@@ -1,0 +1,53 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: theinfinitelibrary-db
+    environment:
+      MYSQL_DATABASE: theinfinitelibrary
+      MYSQL_USER: ${MYSQL_USER:-appuser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-apppassword}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+
+    volumes:
+      - db_data:/var/lib/mysql
+      # Runs once on first startup (when db_data is empty)
+      - ./schemas_theinfinitelibrary.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  backend:
+    build:
+      context: ./theinfinitelibrary-backend
+    container_name: theinfinitelibrary-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      # --- Pick ONE style your Go code supports (adjust names as needed) ---
+
+      # Style A: separate env vars (common)
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: theinfinitelibrary
+      DB_USER: ${MYSQL_USER:-appuser}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-apppassword}
+
+      # Style B: single DSN (very common in Go)
+      # DATABASE_URL: "appuser:apppassword@tcp(db:3306)/theinfinitelibrary?parseTime=true"
+
+  frontend:
+    build:
+      context: ./theinfinitelibrary-frontend
+    container_name: theinfinitelibrary-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  db_data:
