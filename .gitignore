@@ -1,0 +1,6 @@
+
+# Go toolchain archive (should not be committed)
+theinfinitelibrary-backend/go1.24.5.linux-amd64.tar.gz
+
+# Large archives
+*.tar.gz
