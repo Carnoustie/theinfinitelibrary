@@ -1,22 +1,18 @@
 # Build stage
 FROM golang:1.24-alpine AS builder
-
 WORKDIR /app
+
 RUN apk add --no-cache git
 
-# Copy dependency files first
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy the source code
 COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o server .
 
-# Build binary
-RUN go build -o server server.go
-
-# Final stage
-FROM alpine:latest
+FROM alpine:3.20
 WORKDIR /app
-COPY --from=builder /app/server .
+COPY --from=builder /app/server /app/server
+
 EXPOSE 8080
-CMD ["./server"]
+CMD ["/app/server"]
