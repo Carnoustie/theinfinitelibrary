@@ -1,0 +1,6 @@
+.git
+*.tar.gz
+*.zip
+bin
+tmp
+**/*.log
