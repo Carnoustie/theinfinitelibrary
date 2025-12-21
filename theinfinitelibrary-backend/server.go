@@ -28,5 +28,5 @@ func main() {
 	http.HandleFunc("/api/postMessage/", PostMessageHandler)
 	http.HandleFunc("/api/chatRoom/", ChatRoomHandler)
 
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8000", nil)
 }

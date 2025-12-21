@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams, 
 import { redirect } from 'react-router';
 
 
-
+const API_URL = process.env.REACT_BASE_URL || "http://localhost:8000"
 
 function ChatRoom(props){
 
@@ -16,7 +16,7 @@ function ChatRoom(props){
   const navigate = useNavigate()
 
   useEffect(() => {
-    const es = new EventSource(`http://localhost:8080/api/chatRoom/${chatId}`)
+    const es = new EventSource(`${API_URL}/api/chatRoom/${chatId}`)
     esRef.current = es;
     es.onopen = () => console.log("SSE Open")
     es.onerror = (e) => console.log("SSE Error", e)
@@ -35,7 +35,7 @@ function ChatRoom(props){
   async function submitHandler(ev){
     ev.preventDefault()
     console.log("\n\n\nhit here")
-    const response = fetch(`/api/postMessage/${chatId}`, {
+    const response = fetch(`${API_URL}/api/postMessage/${chatId}`, {
       method: "POST",
       body: JSON.stringify({message: chatmessage, chatroomid: chatId, username: props.username})
     })
@@ -105,12 +105,12 @@ function AddBook(props){
   async function submitHandler(ev){
     ev.preventDefault()
     console.log("\n\n\nHit bookadder")
-    const response = await fetch("api/addbook",{
+    const response = await fetch(`${API_URL}/api/addbook`,{
       method: "POST",
       body: JSON.stringify({username: props.username, title: title, author:  author})
     });
 
-    const r2 = await fetch("api/getbooks",{
+    const r2 = await fetch(`${API_URL}/api/getbooks`,{
       method: "POST",
       body: JSON.stringify({username:props.username})
     })
@@ -190,7 +190,7 @@ function Signup(props){
   async function submitHandler(ev){
     ev.preventDefault()
 
-    const response = await fetch("/api/signup", {
+    const response = await fetch(`${API_URL}/api/signup`, {
       method: "POST",
       body: JSON.stringify({username, password})
     });
@@ -243,7 +243,7 @@ function Login(props){
   async function loginHandler(ev){
     ev.preventDefault()
 
-    const response = await fetch("/api/login", {
+    const response = await fetch(`${API_URL}/api/login`, {
       method: "POST",
       body: JSON.stringify({username: props.username, password:  password})
     });
@@ -254,14 +254,23 @@ function Login(props){
 
 
 
-    const r2 = await fetch("api/getbooks",{
+    const r2 = await fetch(`${API_URL}/api/getbooks`,{
       method: "POST",
       body: JSON.stringify({username:props.username})
     })
 
-    const books = await r2.json()
-    
-    props.setBookList(books)
+    if(r2.ok){
+      const text = await r2.text();
+      if(text){
+        const books = JSON.parse(text);
+        props.setBookList(books)
+      } else{
+        console.error("Backend return an empty body");
+      }
+    } else{
+      console.error("Server returned an error status: ", r2.status)
+    }
+
 
 
 
@@ -343,7 +352,7 @@ function App() {
 
   function logtoconsole(){
     console.log("\n\n\nSomebody wants to join the book club!\n\n\n")
-    fetch("/api/").then(res => res.text()).then(data => {
+    fetch(`${API_URL}/api/`).then(res => res.text()).then(data => {
       console.log(data);
       setMessage(data);
     })

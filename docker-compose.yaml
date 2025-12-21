@@ -4,11 +4,15 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: "janeausten123"
       MYSQL_DATABASE: "theinfinitelibrary"
+    volumes:
+      - ./schemas_theinfinitelibrary.sql:/docker-entrypoint-initdb.d/init.sql
   frontend:
     build: ./theinfinitelibrary-frontend
     image: theinfinitelibrary-frontend:1.0
     ports:
       - 3000:3000
+    environment:
+      - REACT_BASE_URL=http://backend:8000
   backend:
     build: ./theinfinitelibrary-backend
     image: theinfinitelibrary-backend:1.0
