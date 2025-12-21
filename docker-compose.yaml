@@ -1,50 +1,25 @@
 services:
   db:
-    image: mysql:8.4
-    container_name: theinfinitelibrary-db
+    image: mysql:9.5
     environment:
-      MYSQL_DATABASE: theinfinitelibrary
-      MYSQL_USER: ${MYSQL_USER:-appuser}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-apppassword}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
-    # Avoid host port conflicts; backend uses db:3306 internally
-    # ports:
-    #   - "3306:3306"
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./schemas_theinfinitelibrary.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
-      interval: 5s
-      timeout: 3s
-      retries: 30
-
-  backend:
-    build:
-      context: ./theinfinitelibrary-backend
-    container_name: theinfinitelibrary-backend
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - "8080:8080"
-    environment:
-      DB_HOST: db
-      DB_PORT: "3306"
-      DB_NAME: theinfinitelibrary
-      DB_USER: ${MYSQL_USER:-appuser}
-      DB_PASSWORD: ${MYSQL_PASSWORD:-apppassword}
-      # If your Go app uses a single DSN instead, use this and remove the vars above:
-      # DATABASE_URL: "${MYSQL_USER:-appuser}:${MYSQL_PASSWORD:-apppassword}@tcp(db:3306)/theinfinitelibrary?parseTime=true"
-
+      MYSQL_ROOT_PASSWORD: "janeausten123"
+      MYSQL_DATABASE: "theinfinitelibrary"
   frontend:
-    build:
-      context: ./theinfinitelibrary-frontend
-    container_name: theinfinitelibrary-frontend
-    depends_on:
-      - backend
+    build: ./theinfinitelibrary-frontend
+    image: theinfinitelibrary-frontend:1.0
     ports:
-      - "3000:80"
-
-volumes:
-  db_data:
+      - 3000:3000
+  backend:
+    build: ./theinfinitelibrary-backend
+    image: theinfinitelibrary-backend:1.0
+    ports: 
+      - 8000:8000
+    environment:
+      - DB_USER=root
+      - DB_PASSWORD=janeausten123
+      - DB_NAME=theinfinitelibrary
+      - DB_HOST=db
+    depends_on:
+      - db
+  
+  
