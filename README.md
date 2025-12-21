@@ -2,8 +2,8 @@ Writing social media app for bookworms in go (backend) and typescript (react) fr
 
 To run the app, execute <br> <br>
 `docker compose up` <br> <br> While standing in the root folder. This will:
-* build and run three Docker containers: mysql (DB), backend, and frontend
-* create database and initialize its schemas
+* Build and run three Docker containers: mysql (DB), backend, and frontend
+* Create database and initialize its schemas
 * Build and run backend
 * Install and run frontend
 
