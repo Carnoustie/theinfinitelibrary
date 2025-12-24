@@ -4,7 +4,7 @@ import { useState , useEffect, useRef} from 'react';
 import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams, useLocation} from 'react-router-dom';
 import { redirect } from 'react-router';
 
-
+//When deployed in container, backend URL from environment variable will be found
 const API_URL = process.env.REACT_BASE_URL || "http://localhost:8000"
 
 function ChatRoom(props){
@@ -34,7 +34,6 @@ function ChatRoom(props){
 
   async function submitHandler(ev){
     ev.preventDefault()
-    console.log("\n\n\nhit here")
     const response = fetch(`${API_URL}/api/postMessage/${chatId}`, {
       method: "POST",
       body: JSON.stringify({message: chatmessage, chatroomid: chatId, username: props.username})
@@ -152,6 +151,7 @@ function AddBook(props){
 
 
 function Loggedin(props){
+
   console.log("Hit loggedin")
   return(
     <div className="App-header">
@@ -182,9 +182,11 @@ function Signup(props){
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
+  let returnButtonString = "Return to " + props.previousSite
 
-
+  const navigate = useNavigate();
   props.setPreviousSite("signup page")
+
 
 
   async function submitHandler(ev){
@@ -210,6 +212,9 @@ function Signup(props){
           />
           <br/>
           <br/>
+          <Link to="/" className="return-link">
+            Return to Home page
+          </Link>
           <input
             value = {password}
             onChange={event=>setPassword(event.target.value)}
@@ -237,8 +242,13 @@ function Login(props){
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
   const [isloggedin, setIsLoggedIn] = useState(false)
+  let returnButtonString = "Return to " + props.previousSite
 
+
+  const navigate = useNavigate();
   props.setPreviousSite("Login page")
+
+
 
   async function loginHandler(ev){
     ev.preventDefault()
@@ -293,6 +303,9 @@ function Login(props){
             placeholder="Enter your password"
           />
           <br/>
+          <Link to="/" className="return-link">
+            Return to Home page
+          </Link>
           <button type = "submit" className="button-style">
             Login
           </button>
@@ -349,15 +362,6 @@ function App() {
   const [previousSite, setPreviousSite] = useState("")
   const [chatRooms, setChatRooms] = useState([])
 
-
-  function logtoconsole(){
-    console.log("\n\n\nSomebody wants to join the book club!\n\n\n")
-    fetch(`${API_URL}/api/`).then(res => res.text()).then(data => {
-      console.log(data);
-      setMessage(data);
-    })
-  }
-
   const join_prompt = "Join The Infinite Library!"
   return (
     <BrowserRouter>
@@ -368,7 +372,6 @@ function App() {
         <Home
           message={message}
           join_prompt={join_prompt}
-          logtoconsole={logtoconsole}
         />
         }
       />
