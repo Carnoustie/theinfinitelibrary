@@ -1,4 +1,26 @@
-Writing social media app for bookworms in go (backend) and typescript (react) frontend. Minimal use of AI assistants and no copy-paste-coding to preserve control of codebase.
+# What it is
+Social media app for bookworms. Minimal use of AI assistants during devlopment to preserve control of codebase.
+
+## Tech stack
+* Backend - _**Go**_
+* Frontend - _**React & Javascript**_
+* Database - _**MySQL**_
+* Containerization - _**Docker**_
+
+## Features
+* User Profile
+  * Personal _"library"_ of books read.
+  * One-way Argon2 hashing of passwords for password integrity.
+* Bookwise chatrooms to connect with likeminded readers.
+
+
+
+### Upcoming Features
+* Book clubs with configurable private/public chatrooms and invitation function.
+  * Schedule coordinator for physical meetups in book clubs.
+* Browsing of books based on genre and popularity.
+
+# How to run it
 
 To run the app, execute <br> <br>
 `docker compose up` <br> <br> While standing in the root folder. This will:
