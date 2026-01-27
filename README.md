@@ -1,5 +1,5 @@
 # What it is
-Social media app for bookworms. Minimal use of AI assistants during devlopment to preserve control of codebase.
+Social media app for bookworms where book lovers can connect with likeminded readers. Minimal use of AI assistants during devlopment to preserve control of codebase.
 
 ## Tech stack
 * Backend - _**Go**_
