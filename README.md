@@ -7,6 +7,10 @@ Social media app for bookworms where book lovers can connect with likeminded rea
 * Database - _**MySQL**_
 * Containerization - _**Docker**_
 
+<p align="left">
+  <img src="assets/gopher" alt="gopher" width="50%">
+</p>
+
 ## Features
 * User Profile
   * Personal _"library"_ of books read.
@@ -34,6 +38,6 @@ Then visit the frontend by navigating to http://localhost:3000/
 # Frontend routing tree:
 
 <p align="left">
-  <img src="React_router_tree.png" alt="Graddict" width="50%">
+  <img src="React_router_tree.png" alt="routing" width="50%">
 </p>
 
