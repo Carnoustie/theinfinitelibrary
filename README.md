@@ -42,6 +42,6 @@ Then visit the frontend by navigating to http://localhost:3000/
 # Frontend routing tree:
 
 <p align="left">
-  <img src="React_router_tree.png" alt="routing" width="50%">
+  <img src="docs/React_router_tree.png" alt="routing" width="50%">
 </p>
 
