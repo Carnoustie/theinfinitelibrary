@@ -39,6 +39,16 @@ To run the app, execute <br> <br>
 
 Then visit the frontend by navigating to http://localhost:3000/
 
+
+# High level architecture:
+
+The below diagram visualizes the high-level architecture for The Infinite Library. Implementation details are abstracted away, and logical units below do not perfectly map onto request handlers in the app.
+
+<p align="left">
+  <img src="docs/HighLevel_Architecture.svg" alt="routing" width="120%">
+</p>
+
+
 # Frontend routing tree:
 
 <p align="left">
