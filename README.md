@@ -48,6 +48,13 @@ The below diagram visualizes the high-level architecture for The Infinite Librar
   <img src="docs/HighLevel_Architecture.svg" alt="architecture" width="120%">
 </p>
 
+# Chatrooms architecture:
+
+The below diagram visually describes the current implementation of disjunct, concurrent, bookwise chatrooms, which leverages the concurrency support in Go with its Gochannels and Goroutines.
+
+<p align="left">
+  <img src="docs/Chatrooms_Architecture.svg" alt="chatrooms architecture" width="120%">
+</p>
 
 # Frontend routing tree:
 The below diagram depicts the user flow in the frontend.
