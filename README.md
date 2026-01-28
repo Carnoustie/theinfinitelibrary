@@ -50,7 +50,7 @@ The below diagram visualizes the high-level architecture for The Infinite Librar
 
 
 # Frontend routing tree:
-
+The below diagram depicts the user flow in the frontend.
 <p align="left">
   <img src="docs/React_router_tree.png" alt="routing" width="50%">
 </p>
