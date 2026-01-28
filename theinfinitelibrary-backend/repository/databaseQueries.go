@@ -103,3 +103,27 @@ func SetChatroomIdFromSingleBook(bookID int64, chatRoomID int64) (error){
 	}
 	return nil
 }
+
+
+func GetSaltAndPwHash(username string) ([]byte, []byte, error) {
+	salt := make([]byte, 2048)
+	pwHash := make([]byte, 2048)
+	err := DB.QueryRow("select salt,password_hash from til_member where username=?", username).Scan(&salt, &pwHash)
+	if err!=nil{
+		return nil, nil, fmt.Errorf("\n\ndatabase fetch of salt and password hash from user %s failed with error%s", username, err)
+	}
+	return salt, pwHash, nil
+}
+
+func AddNewUser(username string, salt []byte, encryptedPassword []byte) error{
+	_, err := DB.Exec("insert into til_member(username, salt, password_hash) values (?,?,?)", username, salt, encryptedPassword)
+	if err!= nil{
+		return fmt.Errorf("\n\ndatabase insert of new user with username %s failed with error %s", username, err)
+	}
+	return nil
+}
+
+
+// 40:	err = repository.DB.QueryRow("select salt,password_hash from til_member where username=?", u.Username).Scan(&salt, &pwHash)
+// 42:		fmt.Printf("DB lookup of user in login failed with error: %s", err)
+// 81:	_, err = repository.DB.Exec("insert into til_member(username, salt, password_hash) values (?,?,?)", u.Username, salt, encryptedPassword)

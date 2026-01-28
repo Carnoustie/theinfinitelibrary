@@ -35,9 +35,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//fetching user from DB
-	var salt []byte
-	var pwHash []byte
-	err = repository.DB.QueryRow("select salt,password_hash from til_member where username=?", u.Username).Scan(&salt, &pwHash)
+	salt, pwHash, err := repository.GetSaltAndPwHash(u.Username)
 	if err != nil {
 		fmt.Printf("DB lookup of user in login failed with error: %s", err)
 		_, _ = w.Write([]byte("error"))
@@ -78,7 +76,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = rand.Read(salt)
 	//encrypt password for integrity
 	encryptedPassword := argon2.IDKey([]byte(u.Password), salt, 1, 64*1024, 4, 32)
-	_, err = repository.DB.Exec("insert into til_member(username, salt, password_hash) values (?,?,?)", u.Username, salt, encryptedPassword)
+	err = repository.AddNewUser(u.Username, salt, encryptedPassword)
 	if err != nil {
 		fmt.Println("Insert failed: ", err)
 		w.Write([]byte("User already exists, pick a different username."))
