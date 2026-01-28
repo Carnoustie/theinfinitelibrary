@@ -25,7 +25,7 @@ func PostMessageHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	chatId := strings.TrimPrefix(r.URL.Path, "/api/postMessage/")
-	fmt.Println("\n\nEntered API endpoint %s", r.URL.Path)
+	fmt.Printf("\n\nEntered API endpoint %s", r.URL.Path)
 
 	fmt.Println("\n\nhit postmessage api with chatid: ", chatId)
 	var bodyContents []byte
@@ -42,10 +42,10 @@ func PostMessageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("\n\nRead from Browser: ", payload.Message, "\n\n")
+	fmt.Print("\n\nRead from Browser: ", payload.Message, "\n\n")
 	MainChannel <- payload
 
-	fmt.Println("\n\nWrite complete\n\n")
+	fmt.Print("\n\nWrite complete\n\n")
 }
 
 func ChatRoomHandler(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +69,7 @@ func ChatRoomHandler(w http.ResponseWriter, r *http.Request) {
 
 	var message string
 	for {
-		fmt.Println("\n\nEntered chat loop in chatroom api\n\n")
+		fmt.Print("\n\nEntered chat loop in chatroom api\n\n")
 		message = <-clientChannel
 		message = "data: " + message + "\n\n"
 		fmt.Println("\n\nMessage to send:\n\n", message)

@@ -39,7 +39,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var pwHash []byte
 	err = repository.DB.QueryRow("select salt,password_hash from til_member where username=?", u.Username).Scan(&salt, &pwHash)
 	if err != nil {
-		fmt.Printf("DB lookup of user in login failed with error: ", err)
+		fmt.Printf("DB lookup of user in login failed with error: %s", err)
 		_, _ = w.Write([]byte("error"))
 		return
 	} else {

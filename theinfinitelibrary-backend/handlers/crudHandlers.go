@@ -6,18 +6,12 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"testing"
 
 	"github.com/Carnoustie/theinfinitelibrary-backend/algorithms"
 	"github.com/Carnoustie/theinfinitelibrary-backend/repository"
 )
 
-type Book struct {
-	Id         int64  `json:id`
-	MemberID   int64  `json:"member_id"`
-	Title      string `json:"title"`
-	Author     string `json:"author"`
-	ChatRoomID int64  `json:"chatroom_id"`
-}
 
 
 func AddBookHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +22,7 @@ func AddBookHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("\n\nParsing payload in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
 		return
 	}
-	var bk Book
+	var bk repository.Book
 	var u User
 	err = json.Unmarshal(bodyContents, &bk)
 	if err != nil {
@@ -40,19 +34,22 @@ func AddBookHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("\n\nJSON parsing in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
 		return
 	}
-	var userID int
-	err = repository.DB.QueryRow("select id from til_member where username=?", u.Username).Scan(&userID)
+	userID, err := repository.GetUseridByUsername(u.Username)
 	if err != nil {
 		fmt.Printf("\n\nDatabase lookup of member %s failed with error %s\n\n", u.Username, err)
 		return
 	}
-	_, err = repository.DB.Exec("insert into books (member_id, title, author) values(?,?,?)", userID, bk.Title, bk.Author)
+	err = repository.PersistBook(userID, bk.Title, bk.Author)
 	if err != nil {
 		fmt.Printf("\n\nDatabase insert of book %s with title %s by member %s failed with error %s\n\n", bk.Title, bk.Author, u.Username, err)
 		return
 	} else {
 		fmt.Printf("\n\nAdded book with title %s and author %s for user %s", bk.Title, bk.Author, u.Username)
 	}
+}
+
+func AddBookHandler_Test(t * testing.T) int{
+	return 1
 }
 
 
@@ -74,36 +71,35 @@ func GetBooksHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var memberID int64
-	err := repository.DB.QueryRow("select id from til_member where username=?", u.Username).Scan(&memberID)
+	memberID, err := repository.GetUseridByUsername(u.Username)
 	if err != nil {
-		fmt.Printf("Database lookup of member in HTTP request to %s failed with error: ", r.URL.Path, err)
+		fmt.Printf("Database lookup of member in HTTP request to %s failed with error: %s", r.URL.Path, err)
 		return
 	}
 
-	rows, err := repository.DB.Query("select id, title, author from books where member_id=?", memberID)
+	rows, err := repository.GetBooksByMemberID(memberID)
 	if err != nil {
-		fmt.Printf("Database lookup of book in HTTP request to %s failed with error: ", r.URL.Path, err)
+		fmt.Printf("Database lookup of book in HTTP request to %s failed with error: %s", r.URL.Path, err)
 		return
 	}
 
-	var books []Book
-	var allBooks []Book
-	var tempBook Book
-	allBookRows, err := repository.DB.Query("select id, member_id, title, author from books")
+	var books []repository.Book
+	var allBooks []repository.Book
+	var tempBook repository.Book
+	allBookRows, err := repository.GetAllBooks()
 	if err != nil {
-		fmt.Printf("Database lookup of book in HTTP request to %s failed with error: ", r.URL.Path, err)
+		fmt.Printf("Database lookup of book in HTTP request to %s failed with error: %s", r.URL.Path, err)
 		return
 	}
 
 	for allBookRows.Next() {
-		allBookRows.Scan(&tempBook.Id, &tempBook.MemberID, &tempBook.Title, &tempBook.Author)
+		allBookRows.Scan(&tempBook.Id, &tempBook.MemberID, &tempBook.Title, &tempBook.Author, &tempBook.ChatRoomID)
 		allBooks = append(allBooks, tempBook)
 	}
 
-	var b Book
+	var b repository.Book
 	var levenshteinDist int
-	var localUserName string
+	// var localUserName string
 	countMatchesMap := make(map[int64]int)
 	var chatRoomId int64
 	var checkChatroomID int64
@@ -119,39 +115,31 @@ func GetBooksHandler(w http.ResponseWriter, r *http.Request) {
 					levenshteinDist = algorithms.LevenshteinDistance(strings.ReplaceAll(b.Title, " ", "_"), strings.ReplaceAll(localbook.Title, " ", "_"), len(b.Title), len(localbook.Title))
 					fmt.Println("\n\nComputed Levenshtein: ", levenshteinDist)
 					if levenshteinDist <= 2 {
-						err = repository.DB.QueryRow("select username from til_member where id=?", localbook.MemberID).Scan(&localUserName)
-						if err != nil {
-							fmt.Printf("Database lookup of user %d in HTTP request to %s failed with error: ", localbook.MemberID, r.URL.Path, err)
-						}
-
 						countMatchesMap[localbook.MemberID]++
 						if countMatchesMap[localbook.MemberID] >= 2 {
-							err = repository.DB.QueryRow("select chatroom_id from books where id=?", b.Id).Scan(&checkChatroomID)
+							checkChatroomID, err = repository.GetChatroomIdFromBookId(b.Id)
 							if err != nil {
-								fmt.Printf("Database lookup of chatroom in HTTP request to %s failed with error: ", r.URL.Path, err)
+								fmt.Printf("Database lookup of chatroom in HTTP request to %s failed with error: %s", r.URL.Path, err)
 							}
-
-							// fmt.Println("\n\nfetched: ", checkChatroomID)
 							if checkChatroomID == 0 {
-								_, err = repository.DB.Exec("insert into chatroom (book_title) values (?)", b.Title)
+								err = repository.AddBookToChatroom(b.Title)
 
 								if err != nil {
-									fmt.Printf("Database insertion of book into chatroom in HTTP request to %s failed with error: ", r.URL.Path, err)
+									fmt.Printf("Database insertion of book into chatroom in HTTP request to %s failed with error: %s", r.URL.Path, err)
 								} else {
-									err = repository.DB.QueryRow("select id from chatroom where book_title = ?", b.Title).Scan(&chatRoomId)
+									chatRoomId, err = repository.GetChatroomIdFromBookTitle(b.Title)
 									if err != nil {
-										fmt.Printf("Database lookup of chatroom in HTTP request to %s failed with error: ", r.URL.Path, err)
+										fmt.Printf("Database lookup of chatroom in HTTP request to %s failed with error: %s", r.URL.Path, err)
 									}
-
-									_, err = repository.DB.Exec("update books set chatroom_id = ? where id = ? or id = ?", chatRoomId, b.Id, localbook.Id)
+									err = repository.SetChatroomIdFromMultipleBooks(b.Id, localbook.Id, chatRoomId)
 									if err != nil {
-										fmt.Printf("Database update of books in HTTP request to %s failed with error: ", r.URL.Path, err)
+										fmt.Printf("Database update of books in HTTP request to %s failed with error: %s", r.URL.Path, err)
 									}
 								}
 							} else {
-								_, err = repository.DB.Exec("update books set chatroom_id = ? where id = ?", chatRoomId, localbook.Id)
+								err = repository.SetChatroomIdFromSingleBook(localbook.Id, chatRoomId)
 								if err != nil {
-									fmt.Printf("Database update of books in HTTP request to %s failed with error: ", r.URL.Path, err)
+									fmt.Printf("Database update of books in HTTP request to %s failed with error: %s", r.URL.Path, err)
 								}
 							}
 						}
@@ -162,14 +150,14 @@ func GetBooksHandler(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	fmt.Println("\n\nCompleted chatroom assignment updates for books in Database in HTTP request to %s", r.URL.Path)
-	rows, err = repository.DB.Query("select id, title, author, chatroom_id from books where member_id=?", memberID)
+	fmt.Printf("\n\nCompleted chatroom assignment updates for books in Database in HTTP request to %s", r.URL.Path)
+	rows, err = repository.GetBooksByMemberID(memberID)
 	if err != nil {
-		fmt.Printf("Database lookup of book in HTTP request to %s failed with error: ", r.URL.Path, err)
+		fmt.Printf("Database lookup of book in HTTP request to %s failed with error: %s", r.URL.Path, err)
 	}
 
 	for rows.Next() {
-		rows.Scan(&b.Id, &b.Title, &b.Author, &b.ChatRoomID)
+		rows.Scan(&b.Id, &b.MemberID, &b.Title, &b.Author, &b.ChatRoomID)
 		books = append(books, b)
 	}
 	var matchedUsername string
@@ -178,21 +166,17 @@ func GetBooksHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("\n\nwith member: ", matchedMember)
 		fmt.Println("\n\nlogged in member: ", memberID)
 		if numberOfSharedBooks >= 2 {
-			err = repository.DB.QueryRow("select username from til_member where id=?", matchedMember).Scan(&matchedUsername)
+			matchedUsername, err = repository.GetUsernameByID(matchedMember)
 			if err != nil {
-				fmt.Printf("Database lookup of username in HTTP request to %s failed with error: ", r.URL.Path, err)
+				fmt.Printf("Database lookup of username in HTTP request to %s failed with error: %s", r.URL.Path, err)
 			}
 
 			fmt.Println("\n\nMatched with member: ", matchedUsername)
-			_, err = repository.DB.Exec("insert into chatroom (book_title) ?")
-			if err != nil {
-				fmt.Printf("Database insert into chatroom in HTTP request to %s failed with error: ", r.URL.Path, err)
-			}
 		}
 	}
 
 	if len(books) == 0 {
-		books = []Book{}
+		books = []repository.Book{}
 	}
 
 	jsonBooks, _ := json.Marshal(&books)

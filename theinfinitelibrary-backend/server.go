@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	fmt.Println("\n\n\n\nThe Infinite Library Server is running\n\n\n\n")
+	fmt.Print("\n\n\n\nThe Infinite Library Server is running\n\n\n\n")
 
 	//Listen to incoming messages in chatrooms
 	go broadcaster(handlers.MainChannel, handlers.ChatRoomChannels)

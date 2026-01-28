@@ -13,7 +13,7 @@ func broadcaster(mainChan chan handlers.ChatPayLoad, chatRooms map[string][]chan
 	var payload handlers.ChatPayLoad
 	for {
 		payload = <-mainChan
-		fmt.Println("\n\nRead following message: ", payload.Message, "\n\n")
+		fmt.Print("\n\nRead following message: ", payload.Message, "\n\n")
 		for chatid, channels := range chatRooms {
 			fmt.Println("writing in channel ", chatid)
 			if payload.ChatRoomID == chatid {
