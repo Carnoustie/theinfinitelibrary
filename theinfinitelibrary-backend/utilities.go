@@ -1,16 +1,19 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/Carnoustie/theinfinitelibrary-backend/handlers"
+)
 
 // projectwide error variable to use for logging
 var err error
 
 // Listens to incoming messages in chatrooms and directs message to correct chatroom
-func broadcaster(mainChan chan ChatPayLoad, chatRooms map[string][]chan string) {
-	var payload ChatPayLoad
+func broadcaster(mainChan chan handlers.ChatPayLoad, chatRooms map[string][]chan string) {
+	var payload handlers.ChatPayLoad
 	for {
 		payload = <-mainChan
-		fmt.Println("\n\nRead following message: ", payload.Message, "\n\n")
+		fmt.Print("\n\nRead following message: ", payload.Message, "\n\n")
 		for chatid, channels := range chatRooms {
 			fmt.Println("writing in channel ", chatid)
 			if payload.ChatRoomID == chatid {
