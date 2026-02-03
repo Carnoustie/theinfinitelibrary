@@ -52,7 +52,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte("Welcome Back! :)"))
 		} else {
 			fmt.Printf("\n\nUser %s retrieved from database but password was invalid for login", u.Username)
+			w.WriteHeader(http.StatusNotFound) //404 invalid password
 			_, _ = w.Write([]byte("Wrong Password!"))
+
 			return
 		}
 	}

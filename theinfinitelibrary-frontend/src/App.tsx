@@ -250,6 +250,7 @@ function Login(props: any){
 
 
 
+
   async function loginHandler(ev: any){
     ev.preventDefault()
 
@@ -257,11 +258,16 @@ function Login(props: any){
       method: "POST",
       body: JSON.stringify({username: props.username, password:  password})
     });
+    
 
-    setIsLoggedIn(true)
+    
+
     const m = await response.text();
     setMessage(m)
 
+    if(response.ok){
+      setIsLoggedIn(true)
+    }
 
 
     const r2 = await fetch(`${API_URL}/api/getbooks`,{
