@@ -15,7 +15,7 @@ Social media app for bookworms where book lovers can connect with likeminded rea
 * Containerization - _**Docker**_
 
 
-  <img src="assets/gopher.svg" alt="gopher" width="10%">  &nbsp;&nbsp;&nbsp;  <img src="assets/golang.svg" alt="golang" width="10%"> &nbsp;&nbsp;&nbsp;   <img src="assets/react.svg" alt="react" width="10%">  &nbsp;&nbsp;&nbsp;  <img src="assets/javascript.svg" alt="javascript" width="10%">  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  <img src="assets/mysql.svg" alt="mysql" width="10%">      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <img src="assets/docker.svg" alt="docker" width="10%">
+  <img src="assets/gopher.svg" alt="gopher" width="10%">  &nbsp;&nbsp;&nbsp;  <img src="assets/golang.svg" alt="golang" width="10%"> &nbsp;&nbsp;&nbsp;   <img src="assets/react.svg" alt="react" width="10%">  &nbsp;&nbsp;&nbsp;  <img src="assets/typescript.svg" alt="typescript" width="10%">  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  <img src="assets/mysql.svg" alt="mysql" width="10%">      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <img src="assets/docker.svg" alt="docker" width="10%">
 
 
 ## Features
