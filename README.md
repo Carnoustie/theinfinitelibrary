@@ -10,7 +10,7 @@ Social media app for bookworms where book lovers can connect with likeminded rea
 
 ## Tech stack
 * Backend - _**Go**_
-* Frontend - _**React & Javascript**_
+* Frontend - _**React & Typescript**_
 * Database - _**MySQL**_
 * Containerization - _**Docker**_
 
