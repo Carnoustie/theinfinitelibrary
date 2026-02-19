@@ -18,7 +18,7 @@ export function Home(props: {[key: string]: string}){
             <br/>
             <br/>
             <br/>
-            <Link to="/login" className="button-link">m
+            <Link to="/login" className="button-link">
               Login!
             </Link>          
           </nav>
@@ -49,6 +49,8 @@ export function Login(props: any){
   
     const m = await response.text();
     setMessage(m)
+
+    console.log(m)
 
     if(response.ok){
       setIsLoggedIn(true)
