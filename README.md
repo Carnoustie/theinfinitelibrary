@@ -1,5 +1,5 @@
 
-<img src="theinfinitelibrary-frontend/src/logotype.png" alt="gopher" width="60%">
+<img src="theinfinitelibrary-frontend/src/resources/logotype.png" alt="logotype" width="60%">
 
 # What it is
 Social media app for bookworms where book lovers can connect with likeminded readers. Minimal use of AI assistants during development to preserve control of codebase.
