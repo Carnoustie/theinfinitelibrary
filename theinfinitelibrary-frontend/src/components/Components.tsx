@@ -37,9 +37,11 @@ export function Login(props: Types.LoginProps){
   let returnButtonString = "Return to " + props.previousSite
 
   const navigate = useNavigate();
-  props.setPreviousSite("Login page")
+  useEffect(() => {
+    props.setPreviousSite("Login page");
+  }, [props.setPreviousSite]);
 
-  async function loginHandler(ev: any){
+  async function loginHandler(ev: React.InputEvent<HTMLFormElement>){
     ev.preventDefault()
 
     const response = await fetch(`${API_URL}/api/login`, {
@@ -113,7 +115,10 @@ export function Signup(props: Types.previousSiteProps){
   let returnButtonString = "Return to " + props.previousSite
 
   const navigate = useNavigate();
-  props.setPreviousSite("signup page")
+
+  useEffect(() => {
+    props.setPreviousSite("signup page")
+  }, [props.setPreviousSite])
 
   async function submitHandler(ev: any){
     ev.preventDefault()
