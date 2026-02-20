@@ -3,7 +3,7 @@ import './style/App.css';
 import { useState , useEffect, useRef} from 'react';
 import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams, useLocation} from 'react-router-dom';
 import { redirect } from 'react-router';
-import {Home, Login, Signup, Loggedin, AddBook, SecurityInfo, ChatRoom} from './components/Home'
+import {Home, Login, Signup, Loggedin, AddBook, SecurityInfo, ChatRoom} from './components/Components'
 import * as Types from './types/types';
 
 
@@ -38,18 +38,19 @@ function App() {
       />
       <Route
       path="/loggedin"
-      element=  {<Loggedin username = {username} setUsername= {setUsername} bookList = {bookList} setBookList = {setBookList}/>}
+      element=  {<Loggedin username = {username} setUsername= {setUsername} booklist = {bookList} setBookList = {setBookList}/>}
       />
       <Route
       path="/addbook"
-      element= {<AddBook username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList}/>}
+      element= {<AddBook username = {username} setUsername = {setUsername} booklist = {bookList} setBookList = {setBookList}/>}
       />
       <Route
       path="/securityinfo"
       element = {<SecurityInfo previousSite = {previousSite} setPreviousSite = {setPreviousSite} />}
       />
       <Route
-      path="/chatroom/:chatId" element = {<ChatRoom username={username} setUsername={setUsername}/>}
+      path="/chatroom/:chatId"
+      element = {<ChatRoom username={username} setUsername={setUsername}/>}
       />
     </Routes>
 

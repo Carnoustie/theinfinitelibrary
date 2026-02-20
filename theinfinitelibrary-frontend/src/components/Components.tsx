@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams, useLocation} from 'react-router-dom';
 import logo from '../resources/logotype.png';
 import { useState , useEffect, useRef} from 'react';
-import { LoginProps } from '../types/types';
+import * as Types from '../types/types';
 
 //When deployed in container, backend URL from environment variable will be found
 const API_URL = process.env.REACT_BASE_URL || "http://localhost:8000"
@@ -21,7 +21,7 @@ export function Home(props: {[key: string]: string}){
             <br/>
             <Link to="/login" className="button-link">
               Login!
-            </Link>          
+            </Link>
           </nav>
           <br/>
         </header>
@@ -29,13 +29,12 @@ export function Home(props: {[key: string]: string}){
   );
 }
 
-export function Login(props: LoginProps){
+export function Login(props: Types.LoginProps){
   // const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
   const [isloggedin, setIsLoggedIn] = useState(false)
   let returnButtonString = "Return to " + props.previousSite
-
 
   const navigate = useNavigate();
   props.setPreviousSite("Login page")
@@ -107,7 +106,7 @@ export function Login(props: LoginProps){
   );
 }
 
-export function Signup(props: any){
+export function Signup(props: Types.previousSiteProps){
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
@@ -162,7 +161,7 @@ export function Signup(props: any){
   );
 }
 
-export function Loggedin(props: any){
+export function Loggedin(props: Types.UserProps){
   return(
     <div className="App-header">
       <header>
@@ -176,7 +175,7 @@ export function Loggedin(props: any){
       <p>
       </p>
       <ul className='book-list'>
-        {props.bookList.length>0 ? props.bookList.map((b: any) =>(
+        {props.booklist.length>0 ? props.booklist.map((b: any) =>(
           <li key={b.title + b.author} className='book-item'> <p>{b.title} by {b.author}</p> 
             <Link to = {`/chatroom/${b.chatroom_id}`} className="lower-button-unfixed"> Enter book chat!</Link>
           </li>
@@ -186,7 +185,7 @@ export function Loggedin(props: any){
   )
 }
 
-export function AddBook(props: any){
+export function AddBook(props: Types.UserProps){
 
   const [title, setTitle] = useState("")
   const [author, setAuthor] = useState("")
@@ -240,7 +239,7 @@ export function AddBook(props: any){
   )
 }
 
-export function SecurityInfo(props: any){
+export function SecurityInfo(props: Types.previousSiteProps){
   
   const navigate = useNavigate();
 
@@ -262,7 +261,7 @@ export function SecurityInfo(props: any){
 }
 
 
-export function ChatRoom(props: any){
+export function ChatRoom(props: Types.ChatroomProps){
 
   const {chatId} = useParams()
   const [chatmessage, setChatMessage] = useState("")
