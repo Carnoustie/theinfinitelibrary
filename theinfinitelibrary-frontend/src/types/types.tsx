@@ -1,11 +1,31 @@
-export {}
+import { useState, Dispatch, SetStateAction } from "react"
 
-type user = {
+export type User = {
     username: string,
     password: string
 }
 
-type book = {
+export type Book = {
     title: string,
     author: string
+}
+
+export type ChatroomID = number
+
+
+
+
+
+export type StringStateSetter = Dispatch<SetStateAction<string>>
+export type NumberStateSetter = Dispatch<SetStateAction<number>>
+
+export type LoginProps = {
+    username: string;
+    setUsername: StringStateSetter;
+    bookList: Book[];
+    setBookList: Dispatch<SetStateAction<Book[]>>;
+    previousSite: string;
+    setPreviousSite: StringStateSetter;
+    chatrooms: ChatroomID[];
+    setChatrooms: Dispatch<SetStateAction<ChatroomID[]>>;
 }

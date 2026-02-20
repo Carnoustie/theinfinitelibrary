@@ -4,17 +4,17 @@ import { useState , useEffect, useRef} from 'react';
 import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams, useLocation} from 'react-router-dom';
 import { redirect } from 'react-router';
 import {Home, Login, Signup, Loggedin, AddBook, SecurityInfo, ChatRoom} from './components/Home'
+import * as Types from './types/types';
 
-//When deployed in container, backend URL from environment variable will be found
 
 function App() {
   
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("")
 
-  const [bookList, setBookList] = useState([])
+  const [bookList, setBookList] = useState<Types.Book[]>([])
   const [previousSite, setPreviousSite] = useState("")
-  const [chatRooms, setChatRooms] = useState([])
+  const [chatRooms, setChatRooms] = useState<Types.ChatroomID[]>([])
 
   const join_prompt = "Join The Infinite Library!"
   return (
@@ -34,7 +34,7 @@ function App() {
       />
       <Route 
       path="/login"
-      element= {<Login username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList} previousSite = {previousSite} setPreviousSite = {setPreviousSite} chatRooms = {chatRooms} setChatRooms = {setChatRooms}/>}
+      element= {<Login username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList} previousSite = {previousSite} setPreviousSite = {setPreviousSite} chatrooms = {chatRooms} setChatrooms = {setChatRooms}/>}
       />
       <Route
       path="/loggedin"

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams, useLocation} from 'react-router-dom';
 import logo from '../resources/logotype.png';
 import { useState , useEffect, useRef} from 'react';
+import { LoginProps } from '../types/types';
 
 //When deployed in container, backend URL from environment variable will be found
 const API_URL = process.env.REACT_BASE_URL || "http://localhost:8000"
@@ -28,7 +29,7 @@ export function Home(props: {[key: string]: string}){
   );
 }
 
-export function Login(props: any){
+export function Login(props: LoginProps){
   // const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
@@ -49,8 +50,6 @@ export function Login(props: any){
   
     const m = await response.text();
     setMessage(m)
-
-    console.log(m)
 
     if(response.ok){
       setIsLoggedIn(true)
