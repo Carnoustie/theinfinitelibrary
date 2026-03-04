@@ -41,3 +41,18 @@ export type ChatroomProps = {
     username: string;
     setUsername: StringStateSetter;
 }
+
+export type ChatState = {
+    messages: string[]
+    status: "Open" | "Closed" | "Error"
+}
+
+export type ChatAction = 
+    | {
+        type: "WriteMessage"
+        payload: string
+    }
+    | {
+        type: "SetStatus"
+        payload: ChatState["status"]
+    }

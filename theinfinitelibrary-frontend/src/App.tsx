@@ -50,7 +50,9 @@ function App() {
       />
       <Route
       path="/chatroom/:chatId"
-      element = {<ChatRoom username={username} setUsername={setUsername}/>}
+      element = {
+          <ChatRoom username={username} setUsername={setUsername}/>
+      }
       />
     </Routes>
 

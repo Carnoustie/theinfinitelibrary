@@ -202,6 +202,12 @@ html, body {
   left: 60px;
 }
 
+.form-layout{
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
 .form-style{
   background-color: #e4aca2;
   text-decoration: wavy;
