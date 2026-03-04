@@ -12,6 +12,8 @@ function App() {
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("")
 
+  const [user, setUser] = useState({username: "", password: ""})
+
   const [bookList, setBookList] = useState<Types.Book[]>([])
   const [previousSite, setPreviousSite] = useState("")
   const [chatRooms, setChatRooms] = useState<Types.ChatroomID[]>([])
@@ -34,7 +36,7 @@ function App() {
       />
       <Route 
       path="/login"
-      element= {<Login username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList} previousSite = {previousSite} setPreviousSite = {setPreviousSite} chatrooms = {chatRooms} setChatrooms = {setChatRooms}/>}
+      element= {<Login user = {user} setUser = {setUser} bookList = {bookList} setBookList = {setBookList} previousSite = {previousSite} setPreviousSite = {setPreviousSite} chatrooms = {chatRooms} setChatrooms = {setChatRooms}/>}
       />
       <Route
       path="/loggedin"

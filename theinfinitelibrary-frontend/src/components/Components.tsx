@@ -3,6 +3,8 @@ import logo from '../resources/logotype.png';
 import { useState , useEffect, useReducer, createContext, ReactNode, useContext} from 'react';
 import * as Types from '../types/types';
 import { basename } from 'path';
+import { log } from 'console';
+import { UserContext, UserContextProvider } from './ContextProviders';
 
 //When deployed in container, backend URL from environment variable will be found
 const API_URL = process.env.REACT_BASE_URL || "http://localhost:8000"
@@ -30,11 +32,14 @@ export function Home(props: {[key: string]: string}){
   );
 }
 
+
+
 export function Login(props: Types.LoginProps){
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
   const [isloggedin, setIsLoggedIn] = useState(false)
   let returnButtonString = "Return to " + props.previousSite
+  const user = useContext(UserContext)
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -46,11 +51,14 @@ export function Login(props: Types.LoginProps){
 
     const response = await fetch(`${API_URL}/api/login`, {
       method: "POST",
-      body: JSON.stringify({username: props.username, password:  password})
+      body: JSON.stringify({username: props.user.username, password:  password})
     });
+
+    
   
     const m = await response.text();
     setMessage(m)
+
 
     if(response.ok){
       setIsLoggedIn(true)
@@ -58,8 +66,10 @@ export function Login(props: Types.LoginProps){
 
     const r2 = await fetch(`${API_URL}/api/getbooks`,{
       method: "POST",
-      body: JSON.stringify({username:props.username})
+      body: JSON.stringify({username:props.user.username})
     })
+
+    
 
     if(r2.ok){
       const text = await r2.text();
@@ -79,15 +89,15 @@ export function Login(props: Types.LoginProps){
       <header>
         <form className="form-style" onSubmit={loginHandler} >
           <input
-            value={props.username}
-            onChange={event=>props.setUsername(event.target.value)}
+            value={user?.username}
+            onChange={event=> user.username =  event.target.value}
             placeholder="Enter your username"
           />
           <br/>
           <br/>
           <input
             value = {password}
-            onChange={event=>setPassword(event.target.value)}
+            onChange={event=> user.username = event.target.value}
             placeholder="Enter your password"
           />
           <br/>

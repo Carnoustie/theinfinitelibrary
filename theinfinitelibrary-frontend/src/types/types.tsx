@@ -13,10 +13,11 @@ export type Book = {
 export type ChatroomID = number
 export type StringStateSetter = Dispatch<SetStateAction<string>>
 export type NumberStateSetter = Dispatch<SetStateAction<number>>
+export type UserStateSetter = Dispatch<SetStateAction<User>>
 
 export type LoginProps = {
-    username: string;
-    setUsername: StringStateSetter;
+    user: User;
+    setUser: UserStateSetter;
     bookList: Book[];
     setBookList: Dispatch<SetStateAction<Book[]>>;
     previousSite: string;
@@ -56,3 +57,8 @@ export type ChatAction =
         type: "SetStatus"
         payload: ChatState["status"]
     }
+
+export type UserContext = {
+    user: User
+    setUser: Dispatch<SetStateAction<User|null>>
+}
