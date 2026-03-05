@@ -4,7 +4,7 @@ import { useState , useEffect, useReducer, createContext, ReactNode, useContext}
 import * as Types from '../types/types';
 import { basename } from 'path';
 import { log } from 'console';
-import { UserContext, UserContextProvider } from './ContextProviders';
+import { UserContextProvider, UserCtx, useUserContext } from './ContextProviders';
 
 //When deployed in container, backend URL from environment variable will be found
 const API_URL = process.env.REACT_BASE_URL || "http://localhost:8000"
@@ -39,7 +39,8 @@ export function Login(props: Types.LoginProps){
   const [message, setMessage] = useState("")
   const [isloggedin, setIsLoggedIn] = useState(false)
   let returnButtonString = "Return to " + props.previousSite
-  const user = useContext(UserContext)
+  const UserContext = useUserContext()
+  
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -51,7 +52,7 @@ export function Login(props: Types.LoginProps){
 
     const response = await fetch(`${API_URL}/api/login`, {
       method: "POST",
-      body: JSON.stringify({username: props.user.username, password:  password})
+      body: JSON.stringify({username: UserContext?.user.username, password:  UserContext?.user.password})
     });
 
     
@@ -66,7 +67,7 @@ export function Login(props: Types.LoginProps){
 
     const r2 = await fetch(`${API_URL}/api/getbooks`,{
       method: "POST",
-      body: JSON.stringify({username:props.user.username})
+      body: JSON.stringify({username: UserContext?.user.username})
     })
 
     
@@ -89,15 +90,15 @@ export function Login(props: Types.LoginProps){
       <header>
         <form className="form-style" onSubmit={loginHandler} >
           <input
-            value={user?.username}
-            onChange={event=> user.username =  event.target.value}
+            value={UserContext?.user.username}
+            onChange={event=>  UserContext.setUser(prev => ({...prev, username: event.target.value}))}
             placeholder="Enter your username"
           />
           <br/>
           <br/>
           <input
-            value = {password}
-            onChange={event=> user.username = event.target.value}
+            value = {UserContext?.user.password}
+            onChange={event=>  UserContext.setUser(prev => ({...prev, password: event.target.value}))}
             placeholder="Enter your password"
           />
           <br/>

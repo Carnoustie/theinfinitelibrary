@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams, 
 import { redirect } from 'react-router';
 import {Home, Login, Signup, Loggedin, AddBook, SecurityInfo, ChatRoom} from './components/Components'
 import * as Types from './types/types';
+import { UserContextProvider } from './components/ContextProviders';
 
 
 function App() {
@@ -36,7 +37,18 @@ function App() {
       />
       <Route 
       path="/login"
-      element= {<Login user = {user} setUser = {setUser} bookList = {bookList} setBookList = {setBookList} previousSite = {previousSite} setPreviousSite = {setPreviousSite} chatrooms = {chatRooms} setChatrooms = {setChatRooms}/>}
+      element= {
+        <UserContextProvider>
+          <Login
+            bookList = {bookList}
+            setBookList = {setBookList}
+            previousSite = {previousSite}
+            setPreviousSite = {setPreviousSite}
+            chatrooms = {chatRooms}
+            setChatrooms = {setChatRooms}
+            />
+        </UserContextProvider>
+      }
       />
       <Route
       path="/loggedin"

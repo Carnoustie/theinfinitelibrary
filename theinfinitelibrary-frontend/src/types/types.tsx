@@ -1,7 +1,7 @@
 import { useState, Dispatch, SetStateAction } from "react"
 
 export type User = {
-    username: string,
+    username: string ,
     password: string
 }
 
@@ -16,8 +16,6 @@ export type NumberStateSetter = Dispatch<SetStateAction<number>>
 export type UserStateSetter = Dispatch<SetStateAction<User>>
 
 export type LoginProps = {
-    user: User;
-    setUser: UserStateSetter;
     bookList: Book[];
     setBookList: Dispatch<SetStateAction<Book[]>>;
     previousSite: string;
@@ -60,5 +58,5 @@ export type ChatAction =
 
 export type UserContext = {
     user: User
-    setUser: Dispatch<SetStateAction<User|null>>
+    setUser: Dispatch<SetStateAction<User>>
 }
