@@ -1,0 +1,62 @@
+import { useState, Dispatch, SetStateAction } from "react"
+
+export type User = {
+    username: string ,
+    password: string
+}
+
+export type Book = {
+    title: string,
+    author: string
+}
+
+export type ChatroomID = number
+export type StringStateSetter = Dispatch<SetStateAction<string>>
+export type NumberStateSetter = Dispatch<SetStateAction<number>>
+export type UserStateSetter = Dispatch<SetStateAction<User>>
+
+export type LoginProps = {
+    bookList: Book[];
+    setBookList: Dispatch<SetStateAction<Book[]>>;
+    previousSite: string;
+    setPreviousSite: StringStateSetter;
+    chatrooms: ChatroomID[];
+    setChatrooms: Dispatch<SetStateAction<ChatroomID[]>>;
+}
+
+export type UserProps = {
+    username: string;
+    setUsername: StringStateSetter;
+    booklist: Book[];
+    setBookList: Dispatch<SetStateAction<Book[]>>;
+}
+
+export type previousSiteProps = {
+    previousSite: string;
+    setPreviousSite: StringStateSetter;
+}
+
+export type ChatroomProps = {
+    username: string;
+    setUsername: StringStateSetter;
+}
+
+export type ChatState = {
+    messages: string[]
+    status: "Open" | "Closed" | "Error"
+}
+
+export type ChatAction = 
+    | {
+        type: "WriteMessage"
+        payload: string
+    }
+    | {
+        type: "SetStatus"
+        payload: ChatState["status"]
+    }
+
+export type UserContext = {
+    user: User
+    setUser: Dispatch<SetStateAction<User>>
+}
