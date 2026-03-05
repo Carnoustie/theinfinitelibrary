@@ -1,7 +1,10 @@
-import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams, useLocation} from 'react-router-dom';
+import { Link , useNavigate, Navigate, useParams,} from 'react-router-dom';
 import logo from '../resources/logotype.png';
-import { useState , useEffect, useRef} from 'react';
+import { useState , useEffect, useReducer, createContext, ReactNode, useContext} from 'react';
 import * as Types from '../types/types';
+import { basename } from 'path';
+import { log } from 'console';
+import { UserContextProvider, UserCtx, useUserContext } from './ContextProviders';
 
 //When deployed in container, backend URL from environment variable will be found
 const API_URL = process.env.REACT_BASE_URL || "http://localhost:8000"
@@ -29,28 +32,34 @@ export function Home(props: {[key: string]: string}){
   );
 }
 
+
+
 export function Login(props: Types.LoginProps){
-  // const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
   const [isloggedin, setIsLoggedIn] = useState(false)
   let returnButtonString = "Return to " + props.previousSite
+  const UserContext = useUserContext()
+  
 
   const navigate = useNavigate();
   useEffect(() => {
     props.setPreviousSite("Login page");
   }, [props.setPreviousSite]);
 
-  async function loginHandler(ev: React.InputEvent<HTMLFormElement>){
+  async function loginHandler(ev: React.SubmitEvent<HTMLFormElement>){
     ev.preventDefault()
 
     const response = await fetch(`${API_URL}/api/login`, {
       method: "POST",
-      body: JSON.stringify({username: props.username, password:  password})
+      body: JSON.stringify({username: UserContext?.user.username, password:  UserContext?.user.password})
     });
+
+    
   
     const m = await response.text();
     setMessage(m)
+
 
     if(response.ok){
       setIsLoggedIn(true)
@@ -58,8 +67,10 @@ export function Login(props: Types.LoginProps){
 
     const r2 = await fetch(`${API_URL}/api/getbooks`,{
       method: "POST",
-      body: JSON.stringify({username:props.username})
+      body: JSON.stringify({username: UserContext?.user.username})
     })
+
+    
 
     if(r2.ok){
       const text = await r2.text();
@@ -79,15 +90,15 @@ export function Login(props: Types.LoginProps){
       <header>
         <form className="form-style" onSubmit={loginHandler} >
           <input
-            value={props.username}
-            onChange={event=>props.setUsername(event.target.value)}
+            value={UserContext?.user.username}
+            onChange={event=>  UserContext.setUser(prev => ({...prev, username: event.target.value}))}
             placeholder="Enter your username"
           />
           <br/>
           <br/>
           <input
-            value = {password}
-            onChange={event=>setPassword(event.target.value)}
+            value = {UserContext?.user.password}
+            onChange={event=>  UserContext.setUser(prev => ({...prev, password: event.target.value}))}
             placeholder="Enter your password"
           />
           <br/>
@@ -191,7 +202,6 @@ export function Loggedin(props: Types.UserProps){
 }
 
 export function AddBook(props: Types.UserProps){
-
   const [title, setTitle] = useState("")
   const [author, setAuthor] = useState("")
   const [addMessage, setAddMessage] = useState("")
@@ -245,9 +255,7 @@ export function AddBook(props: Types.UserProps){
 }
 
 export function SecurityInfo(props: Types.previousSiteProps){
-  
   const navigate = useNavigate();
-
   let returnButtonString = "Return to " + props.previousSite
 
   return(
@@ -265,31 +273,45 @@ export function SecurityInfo(props: Types.previousSiteProps){
   )
 }
 
+function ReduceChatSession(currentChat: Types.ChatState, action: Types.ChatAction): Types.ChatState{
+  switch(action.type){
+    case "WriteMessage":
+      return {...currentChat, messages: [...currentChat.messages, action.payload]}
+    case "SetStatus":
+      return {...currentChat, status: action.payload}
+    default:
+      return currentChat
+  }
+}
 
 export function ChatRoom(props: Types.ChatroomProps){
-
   const {chatId} = useParams()
   const [chatmessage, setChatMessage] = useState("")
-  const [chatHistory, setChatHistory] = useState("")
-  // const esRef = useRef(null);
   const navigate = useNavigate()
+  const initChat: Types.ChatState = {
+    messages: [],
+    status: "Open"
+  }
+  const [currentChat, dispatch] = useReducer(ReduceChatSession, initChat)
 
   useEffect(() => {
     const es = new EventSource(`${API_URL}/api/chatRoom/${chatId}`)
-    // esRef.current = es;
     es.onopen = () => console.log("SSE Open")
-    es.onerror = (e) => console.log("SSE Error", e)
+    es.onerror = (e) => {
+      console.log("SSE Error", e)
+      dispatch({type: 'SetStatus', payload: 'Error'})
+    }
 
     es.onmessage = (ev) => {
       console.log(ev.data)
-      console.log(chatHistory)
-      setChatHistory(previousChatHistory => previousChatHistory + ev.data + "\n\n")
+      console.log("messages")
+      dispatch({type: 'WriteMessage', payload: ev.data + "\n\n"})
     }
 
     return ()=>{
       es.close()
     }
-  }, [chatHistory])
+  }, [])
 
   async function submitHandler(ev: any){
     ev.preventDefault()
@@ -301,26 +323,17 @@ export function ChatRoom(props: Types.ChatroomProps){
 
   return(
     <div className="App-header">
-      <form onSubmit={submitHandler}>
+      <form onSubmit={submitHandler} className="form-layout">
         <textarea
         value = {chatmessage}
         onChange = {event => setChatMessage(event.target.value)}
         className='chat-input-form'
         />
-        <br/>
-        <br/>
-        <br/>
         <button type="submit" className="unplaced-button">
           post message
         </button>
       </form>
-        <br/>
-        <br/>
-        <br/>
-        <br/>
-        <br/>
-        <br/>
-      <p className = "chathistory-style">{chatHistory}</p>
+      <p className = "chathistory-style">{currentChat.messages}</p>
       <button onClick={() => navigate(-1)} className="upper-button-link">
         Return to personal library
       </button>

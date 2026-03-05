@@ -5,12 +5,15 @@ import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams, 
 import { redirect } from 'react-router';
 import {Home, Login, Signup, Loggedin, AddBook, SecurityInfo, ChatRoom} from './components/Components'
 import * as Types from './types/types';
+import { UserContextProvider } from './components/ContextProviders';
 
 
 function App() {
   
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("")
+
+  const [user, setUser] = useState({username: "", password: ""})
 
   const [bookList, setBookList] = useState<Types.Book[]>([])
   const [previousSite, setPreviousSite] = useState("")
@@ -34,7 +37,18 @@ function App() {
       />
       <Route 
       path="/login"
-      element= {<Login username = {username} setUsername = {setUsername} bookList = {bookList} setBookList = {setBookList} previousSite = {previousSite} setPreviousSite = {setPreviousSite} chatrooms = {chatRooms} setChatrooms = {setChatRooms}/>}
+      element= {
+        <UserContextProvider>
+          <Login
+            bookList = {bookList}
+            setBookList = {setBookList}
+            previousSite = {previousSite}
+            setPreviousSite = {setPreviousSite}
+            chatrooms = {chatRooms}
+            setChatrooms = {setChatRooms}
+            />
+        </UserContextProvider>
+      }
       />
       <Route
       path="/loggedin"
@@ -50,7 +64,9 @@ function App() {
       />
       <Route
       path="/chatroom/:chatId"
-      element = {<ChatRoom username={username} setUsername={setUsername}/>}
+      element = {
+          <ChatRoom username={username} setUsername={setUsername}/>
+      }
       />
     </Routes>
 
