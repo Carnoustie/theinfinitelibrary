@@ -1,3 +1,4 @@
+# ⚠️ There are currently problems with Dockerfile versions after a flawed merge, causing dysfunction when building and running the app locally. A fix is underway.
 
 <img src="theinfinitelibrary-frontend/src/resources/logotype.png" alt="logotype" width="60%">
 
