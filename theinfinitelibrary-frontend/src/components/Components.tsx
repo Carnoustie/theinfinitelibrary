@@ -282,6 +282,8 @@ export function ChatRoom(props: Types.ChatroomProps){
   const {chatId} = useParams()
   const [chatmessage, setChatMessage] = useState("")
   const navigate = useNavigate()
+  const UserContext = useUserContext()
+
   const initChat: Types.ChatState = {
     messages: [],
     status: "Open"
@@ -311,7 +313,7 @@ export function ChatRoom(props: Types.ChatroomProps){
     ev.preventDefault()
     const response = fetch(`${API_URL}/api/postMessage/${chatId}`, {
       method: "POST",
-      body: JSON.stringify({message: chatmessage, chatroomid: chatId, username: props.username})
+      body: JSON.stringify({message: chatmessage, chatroomid: chatId, username: UserContext?.user.username})
     })
   }
 
