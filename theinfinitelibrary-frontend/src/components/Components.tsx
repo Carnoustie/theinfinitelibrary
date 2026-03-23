@@ -1,10 +1,8 @@
 import { Link , useNavigate, Navigate, useParams,} from 'react-router-dom';
 import logo from '../resources/logotype.png';
-import { useState , useEffect, useReducer, createContext, ReactNode, useContext} from 'react';
+import { useState , useEffect, useReducer} from 'react';
 import * as Types from '../types/types';
-import { basename } from 'path';
-import { log } from 'console';
-import { UserContextProvider, UserCtx, useUserContext } from './ContextProviders';
+import { useUserContext } from './ContextProviders';
 
 //When deployed in container, backend URL from environment variable will be found
 const API_URL = process.env.REACT_BASE_URL || "http://localhost:8000"
@@ -33,13 +31,10 @@ export function Home(props: {[key: string]: string}){
 }
 
 export function Login(props: Types.LoginProps){
-  const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
   const [isloggedin, setIsLoggedIn] = useState(false)
-  let returnButtonString = "Return to " + props.previousSite
   const UserContext = useUserContext()
 
-  const navigate = useNavigate();
   useEffect(() => {
     props.setPreviousSite("Login page");
   }, [props.setPreviousSite]);
@@ -110,9 +105,6 @@ export function Signup(props: Types.previousSiteProps){
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
-  let returnButtonString = "Return to " + props.previousSite
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     props.setPreviousSite("signup page")
@@ -168,7 +160,6 @@ export function Loggedin(props: Types.UserProps){
 
   const UserContext = useUserContext()
 
-
   return(
     <div className="App-header">
       <header>
@@ -198,7 +189,6 @@ export function AddBook(props: Types.UserProps){
   const [addMessage, setAddMessage] = useState("")
 
   const UserContext = useUserContext()
-
 
   async function submitHandler(ev: any){
     ev.preventDefault()
@@ -307,7 +297,7 @@ export function ChatRoom(props: Types.ChatroomProps){
     return ()=>{
       es.close()
     }
-  }, [])
+  }, )
 
   async function submitHandler(ev: any){
     ev.preventDefault()

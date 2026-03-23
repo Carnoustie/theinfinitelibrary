@@ -1,20 +1,12 @@
-import logo from './resources/logotype.png';
 import './style/App.css';
-import { useState , useEffect, useRef} from 'react';
-import { BrowserRouter, Routes, Route, Link , useNavigate, Navigate, useParams, useLocation} from 'react-router-dom';
-import { redirect } from 'react-router';
+import { useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import {Home, Login, Signup, Loggedin, AddBook, SecurityInfo, ChatRoom} from './components/Components'
 import * as Types from './types/types';
 import { UserContextProvider } from './components/ContextProviders';
 
-
 function App() {
-  
-  const [message, setMessage] = useState("");
   const [username, setUsername] = useState("")
-
-  const [user, setUser] = useState({username: "", password: ""})
-
   const [bookList, setBookList] = useState<Types.Book[]>([])
   const [previousSite, setPreviousSite] = useState("")
   const [chatRooms, setChatRooms] = useState<Types.ChatroomID[]>([])
