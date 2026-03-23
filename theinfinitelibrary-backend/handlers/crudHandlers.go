@@ -12,8 +12,6 @@ import (
 	"github.com/Carnoustie/theinfinitelibrary-backend/repository"
 )
 
-
-
 func AddBookHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*") //Allow sharing response with client
 	var bodyContents []byte
@@ -51,8 +49,6 @@ func AddBookHandler(w http.ResponseWriter, r *http.Request) {
 func AddBookHandler_Test(t * testing.T) int{
 	return 1
 }
-
-
 
 func GetBooksHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*") //Allow sharing response with client

@@ -297,7 +297,7 @@ export function ChatRoom(props: Types.ChatroomProps){
     return ()=>{
       es.close()
     }
-  }, )
+  }, [])
 
   async function submitHandler(ev: any){
     ev.preventDefault()
