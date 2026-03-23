@@ -27,7 +27,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var u User
+	var u User::
 	err = json.Unmarshal(bodyContents, &u) //allow sharing response with client
 	if err != nil {
 		fmt.Printf("\n\nJSON parsing in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
@@ -38,7 +38,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	salt, pwHash, err := repository.GetSaltAndPwHash(u.Username)
 	if err != nil {
 		fmt.Printf("DB lookup of user in login failed with error: %s", err)
-		_, _ = w.Write([]byte("error"))
+		w.WriteHeader(http.StatusNotFound) //404 invalid password
+		_, _ = w.Write([]byte("User Not found."))
 		return
 	} else {
 		//Validate password used at login
@@ -53,8 +54,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			fmt.Printf("\n\nUser %s retrieved from database but password was invalid for login", u.Username)
 			w.WriteHeader(http.StatusNotFound) //404 invalid password
-			_, _ = w.Write([]byte("Wrong Password!"))
-
+			_, _ = w.Write([]byte("Wrong Password."))
 			return
 		}
 	}
