@@ -27,7 +27,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var u User::
+	var u User
 	err = json.Unmarshal(bodyContents, &u) //allow sharing response with client
 	if err != nil {
 		fmt.Printf("\n\nJSON parsing in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
