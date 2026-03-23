@@ -165,10 +165,14 @@ export function Signup(props: Types.previousSiteProps){
 }
 
 export function Loggedin(props: Types.UserProps){
+
+  const UserContext = useUserContext()
+
+
   return(
     <div className="App-header">
       <header>
-        Welcome back {props.username}!
+        Welcome back {UserContext?.user.username}!
         <br/>
         You have read the following books:
       </header>
@@ -193,17 +197,20 @@ export function AddBook(props: Types.UserProps){
   const [author, setAuthor] = useState("")
   const [addMessage, setAddMessage] = useState("")
 
+  const UserContext = useUserContext()
+
+
   async function submitHandler(ev: any){
     ev.preventDefault()
-    console.log("\n\n\nHit bookadder")
+    console.log("\n\n\nHit bookadder with user ", props.username)
     const response = await fetch(`${API_URL}/api/addbook`,{
       method: "POST",
-      body: JSON.stringify({username: props.username, title: title, author:  author})
+      body: JSON.stringify({username: UserContext?.user.username, password:  UserContext?.user.password, title: title, author:  author})
     });
 
     const r2 = await fetch(`${API_URL}/api/getbooks`,{
       method: "POST",
-      body: JSON.stringify({username:props.username})
+      body: JSON.stringify({username: UserContext?.user.username})
     })
     
     const books = await r2.json()
