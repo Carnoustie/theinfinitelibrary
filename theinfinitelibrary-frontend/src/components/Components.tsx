@@ -32,15 +32,12 @@ export function Home(props: {[key: string]: string}){
   );
 }
 
-
-
 export function Login(props: Types.LoginProps){
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
   const [isloggedin, setIsLoggedIn] = useState(false)
   let returnButtonString = "Return to " + props.previousSite
   const UserContext = useUserContext()
-  
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -53,25 +50,16 @@ export function Login(props: Types.LoginProps){
     const response = await fetch(`${API_URL}/api/login`, {
       method: "POST",
       body: JSON.stringify({username: UserContext?.user.username, password:  UserContext?.user.password})
-    });
-
-    
-  
+    });  
     const m = await response.text();
     setMessage(m)
-
-
     if(response.ok){
       setIsLoggedIn(true)
     }
-
     const r2 = await fetch(`${API_URL}/api/getbooks`,{
       method: "POST",
       body: JSON.stringify({username: UserContext?.user.username})
     })
-
-    
-
     if(r2.ok){
       const text = await r2.text();
       if(text){
@@ -84,7 +72,6 @@ export function Login(props: Types.LoginProps){
       console.error("Server returned an error status: ", r2.status)
     }
   }
-
   return(
     <div className="App-header">
       <header>

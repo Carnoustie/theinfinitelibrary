@@ -19,7 +19,6 @@ type User struct {
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*") //allow sharing response with client
-
 	var bodyContents []byte
 	bodyContents, err = io.ReadAll(r.Body)
 	if err != nil {
@@ -45,9 +44,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		//Validate password used at login
 		encryptedPassword := argon2.IDKey([]byte(u.Password), salt, 1, 64*1024, 4, 32)
 		passwordValidation := subtle.ConstantTimeCompare(pwHash, encryptedPassword) //conceal comparison match times for security
-		
-		fmt.Printf("\n\nDebug. encrypted: %s    pwHash: %s           passwordValidation: %d", encryptedPassword, pwHash, passwordValidation)
-
 		if passwordValidation == 1 {
 			fmt.Printf("\n\nUser %s retrieved from database and password successfully validated for login", u.Username)
 			_, _ = w.Write([]byte("Welcome Back! :)"))
@@ -76,7 +72,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("\n\nJSON parsing in HTTP request to %s failed with error %s\n\n", r.URL.Path, err)
 		return
 	}
-	//append salt to password to circumvent duplication_
+	//append salt to password to circumvent duplication
 	salt := make([]byte, 16)
 	_, _ = rand.Read(salt)
 	//encrypt password for integrity
