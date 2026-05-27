@@ -44,6 +44,7 @@ export function Login(props: Types.LoginProps){
 
     const response = await fetch(`${API_URL}/api/login`, {
       method: "POST",
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify({username: UserContext?.user.username, password:  UserContext?.user.password})
     });  
     const m = await response.text();
@@ -115,6 +116,7 @@ export function Signup(props: Types.previousSiteProps){
 
     const response = await fetch(`${API_URL}/api/signup`, {
       method: "POST",
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify({username, password})
     });
 
