@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: theinfinitelibrary-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm CI
+
+      - name: Run tests
+        run: npm test -- --watchAll=false
+  
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: TIL_SpringBoot_Backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Run tests
+        run: mvn clean test
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/theinfinitelibrary
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: janeausten123
