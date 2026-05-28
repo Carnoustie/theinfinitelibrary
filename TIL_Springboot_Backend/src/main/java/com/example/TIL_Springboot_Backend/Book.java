@@ -14,17 +14,21 @@ public class Book {
 
     private String title;
     private String author;
+    private Long userId;
 
     public Book(){ }
 
-    public Book(String title, String author){
+    public Book(String title, String author, Long userId){
         this.title = title;
         this.author = author;
+        this.userId = userId;
     }
 
     public Long getBookId() {
         return bookId;
     }
+
+    public Long getUserId(){ return userId; }
 
     public void setTitle(String title) {
         this.title = title;

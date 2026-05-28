@@ -21,7 +21,7 @@ public class BookController {
         //StrictHttpFirewall fw = new StrictHttpFirewall();
         System.out.println("\n\n\nhit here");
 
-        Book bk = new Book(b.title(), b.author());
+        Book bk = new Book(b.title(), b.author(), b.userId());
         bookRepository.save(bk);
         System.out.println(bk.getTitle());
         return ResponseEntity.ok(bk);
