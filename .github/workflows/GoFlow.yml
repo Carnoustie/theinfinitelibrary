@@ -19,11 +19,12 @@ jobs:
           - 3306:3306
 
     steps:
-      - name: Test editing distance
+      - name: Setup Go env
         uses: actions/setup-go@v6
         with:
           go-version: '1.23'
           go-version-file: 'go.mod'
+      - name: Run Go tests
         run: go test
         
 
